@@ -109,13 +109,14 @@ case/boolP : (X b == 1) => [/eqP |] Xb1.
   rewrite Xb1 mulR1; apply HDX.
   by rewrite /dist_supp inE.
 rewrite [in X in _ <= X](bigD1 b) //=; last by rewrite !inE.
+have HXb1: 1 - X b <> 0.
+  by apply/eqP; apply: contra Xb1; rewrite subR_eq0 eq_sym.
 set d := D1Dist.f X b.
 have -> : \rsum_(i in dist_supp X | i != b) f (r i) * X i =
   (1 - X b) * \rsum_(i in dist_supp X | i != b) f (r i) * d i.
   rewrite big_distrr /=; apply eq_bigr => a /andP[Ha ab].
   rewrite mulRCA; congr (_ * _).
-  rewrite /d /D1Dist.f (negbTE ab) mulRCA mulRV ?mulR1 //.
-  by apply/eqP; apply: contra Xb1; rewrite subR_eq0 eq_sym.
+  by rewrite /d /D1Dist.f (negbTE ab) mulRCA mulRV ?mulR1.
 have /IH H : #|dist_supp (D1Dist.d Xb1)| = n.
   by rewrite D1Dist.card_dist_supp // cardA.
 have /H {H}[H HDX1] : dist_covered r (D1Dist.d Xb1).
@@ -140,18 +141,14 @@ split; last first.
     case: ifP => Hi.
       by rewrite eqxx.
     by rewrite /Rdiv  (mulRC (/ _)) mulRA.
-  rewrite -big_distrr /= mulRA mulRV.
-    rewrite mul1R mulRC => HDXb.
-    rewrite (bigD1 b) /=; last by rewrite inE.
-    rewrite (eq_bigl (fun a : A => a \in dist_supp (D1Dist.d Xb1))) //= => i.
-    rewrite !inE /=.
-    case HXi: (X i == 0) => //=.
-      by rewrite (D1Dist.f_0 _ (eqP HXi)) eqxx.
-    by rewrite D1Dist.f_eq0 // ?HXi // eq_sym.
-  move/(Rplus_eq_compat_l (X b)).
-  rewrite addR0 Rplus_minus => HXb1.
-  move: (Xb1).
-  by rewrite HXb1 eqxx.
+  rewrite -big_distrr /= mulRA mulRV //.
+  rewrite mul1R mulRC => HDXb.
+  rewrite (bigD1 b) /=; last by rewrite inE.
+  rewrite (eq_bigl (fun a : A => a \in dist_supp (D1Dist.d Xb1))) //= => i.
+  rewrite !inE /=.
+  case HXi: (X i == 0) => //=.
+    by rewrite (D1Dist.f_0 _ (eqP HXi)) eqxx.
+  by rewrite D1Dist.f_eq0 // ?HXi // eq_sym.
 apply (@Rle_trans _ (f (r b) * X b +
                      (1 - X b) * f (\rsum_(i in A | i != b) (r i) * d i))); last first.
   apply/Rplus_le_compat_l/Rmult_le_compat_l.
@@ -189,8 +186,7 @@ rewrite mulRC big_distrr /= [in X in _ <= X](eq_bigr (fun i => r i * X i)).
   rewrite [in RHS]rsum_dist_supp; by apply eq_bigl => i; rewrite andbC.
 move=> a ab.
 rewrite mulRCA; congr (_ * _).
-rewrite /d /D1Dist.f (negbTE ab) mulRCA mulRV ?mulR1 //.
-apply/eqP; apply: contra (Xb1); by rewrite subR_eq0 eq_sym.
+by rewrite /d /D1Dist.f (negbTE ab) mulRCA mulRV ?mulR1.
 Qed.
 
 Local Open Scope proba_scope.
