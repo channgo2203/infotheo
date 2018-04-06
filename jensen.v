@@ -118,7 +118,7 @@ have HsumD1 q:
     case: ifP => Hi; first by rewrite eqxx.
     by rewrite /Rdiv (mulRC (/ _)) mulRA.
   by rewrite -big_distrr.
-have HsumXD1 q:
+have {HsumD1}HsumXD1 q:
   \rsum_(a in dist_supp X) q a * X a =
   q b * X b + (1 - X b) * (\rsum_(a in dist_supp d) q a * d a).
   rewrite HsumD1 /d /D1Dist.f /= mulRA mulRV // mul1R (bigD1 b) ?inE //=.
@@ -127,9 +127,10 @@ have HsumXD1 q:
   case HXi: (X i == 0) => //=.
     by rewrite (D1Dist.f_0 _ (eqP HXi)) eqxx.
   by rewrite D1Dist.f_eq0 // ?HXi // eq_sym.
+rewrite 2!{}HsumXD1.
 have /IH H : #|dist_supp d| = n.
   by rewrite D1Dist.card_dist_supp // cardA.
-have /H {H}[H HDX1] : dist_covered r d.
+have /H {IH H}[IH HDX1] : dist_covered r d.
   move=> a Ha.
   apply HDX; move: Ha.
   rewrite /dist_supp !inE /d /D1Dist.d /D1Dist.f /=.
@@ -137,7 +138,6 @@ have /H {H}[H HDX1] : dist_covered r d.
   move/eqP => HX; apply/eqP => HXa.
   by apply HX; rewrite HXa /Rdiv mul0R.
 have HXb: 0 <= X b <= 1 by split; [exact/dist_nonneg|exact/dist_max].
-rewrite 2!HsumXD1.
 split; last first.
   have HDb: D (r b) by apply HDX; rewrite inE.
   by rewrite mulRC; apply convex_f.
