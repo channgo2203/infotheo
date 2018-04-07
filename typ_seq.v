@@ -166,103 +166,54 @@ have -> : Pr P `^ n.+1 (~: p) =
         apply/eqP/Rle_antisym => //; by apply dist_nonneg.
       * rewrite /typ_seq negb_and in LHS.
         case/orP : LHS => LHS.
-        - rewrite RleNgt negbK in LHS.
-          case/boolP : (P `^ n.+1 i == 0) => H1; first by done.
-          apply/esym/orP; right.
-          apply/andP; split.
-            rewrite RltNge.
-            apply: contra H1 => H1.
-            apply/eqP/Rle_antisym; by [apply/RleP | apply dist_nonneg].
+        - apply/esym.
+          case/boolP : (P `^ n.+1 i == 0) => /= H1; first by [].
+          rewrite lt0R H1 /=; apply/andP; split; first exact/RleP/dist_nonneg.
+          rewrite RleNgt negbK in LHS.
           move/RltP in LHS.
           apply (@Log_increasing 2) in LHS => //; last first.
-            apply/RltP.
-            rewrite RltNge.
-            apply: contra H1 => /RleP H1.
-            apply/eqP/Rle_antisym => //; exact: dist_nonneg.
-          rewrite /exp2 ExpK // in LHS.
-          apply (Rmult_lt_compat_l (1 / INR n.+1)) in LHS; last first.
-            apply Rlt_mult_inv_pos => //.
-            fourier.
-            by apply/lt_0_INR/ltP.
-          rewrite mulRA mulRN {2}/Rdiv -mulRA -Rinv_l_sym in LHS; last first.
-            by apply not_0_INR.
-          rewrite mulR1 in LHS.
-          apply Ropp_gt_lt_contravar in LHS.
-          rewrite -mulNR oppRK mul1R in LHS.
-          have H2 : forall a b c, a + b < c -> b < c - a by move=> *; fourier.
-          apply H2 in LHS.
-          move/RltP in LHS.
-          rewrite mulNR.
-          suff : Rabs (- (1 / INR n.+1 * log (P `^ n.+1 i)) - `H P) =
-            - (1 / INR n.+1 * log (P `^ n.+1 i)) - `H P by move=> ->.
-          apply Rabs_pos_eq.
+            apply/RltP; rewrite lt0R H1 /=; exact/RleP/dist_nonneg.
           move/RltP : LHS.
-          by move/(Rlt_trans _ _ _ He)/ltRW.
+          rewrite /exp2 ExpK // mulRC mulRN -mulNR -ltR_pdivr_mulr; last first.
+            exact/lt_0_INR/ltP.
+          rewrite /Rdiv mulRC => /RltP/Ropp_gt_lt_contravar/RltP.
+          rewrite oppRK mulNR -ltR_subRL => LHS.
+          rewrite mul1R Rabs_pos_eq //.
+          by move/RltP : LHS; move/(Rlt_trans _ _ _ He)/ltRW.
         - rewrite RleNgt negbK in LHS.
           apply/esym/orP; right.
-          apply/andP; split.
-            apply/RltP.
-            move/RltP in LHS.
-            apply: Rlt_trans _ LHS; by apply exp2_pos.
           move/RltP in LHS.
+          apply/andP; split.
+            apply/RltP; apply: Rlt_trans LHS; exact: exp2_pos.
           apply (@Log_increasing 2) in LHS => //; last exact/exp2_pos.
-          rewrite /exp2 ExpK // in LHS.
-          apply (Rmult_lt_compat_l (1 / INR n.+1)) in LHS; last first.
-            apply Rlt_mult_inv_pos => //.
-            fourier.
-            by apply/lt_0_INR/ltP.
-          rewrite mulRA mulRN {1}/Rdiv -mulRA -Rinv_l_sym in LHS; last first.
-            by apply not_0_INR.
-          rewrite mulR1 Rmult_minus_distr_l !mulNR !mul1R in LHS.
-          have H2 : forall a b c, - a  - - b < c -> - c - a < - b by move=> *; fourier.
-          apply H2 in LHS.
-          have -> : Rabs (- (1 / INR n.+1) * log (P `^ n.+1 i) - `H P) =
-            - (- (1 / INR n.+1) * log (P `^ n.+1 i) - `H P).
-            rewrite Rabs_left1 //.
-            eapply Rle_trans.
-              apply ltRW.
-              rewrite !mulNR; exact: LHS.
-            fourier.
-          apply/RltP/Ropp_lt_cancel.
-          by rewrite oppRK !mulNR.
+          move: LHS; rewrite /exp2 ExpK // => /RltP.
+          rewrite mulRC mulRN -mulNR -ltR_pdivl_mulr; last exact/lt_0_INR/ltP.
+          rewrite oppRD oppRK => LHS.
+          have H2 : forall a b c, - a + b < c -> - c - a < - b by move=> *; fourier.
+          move/RltP/H2 in LHS.
+          rewrite div1R mulRC mulRN -/(Rdiv _ _) Rabs_left1.
+          + apply/RltP/Ropp_lt_cancel; by rewrite oppRK.
+          + apply: (Rle_trans _ _ _ (ltRW _ _ LHS)); by fourier.
       * move/negbT : LHS.
-        rewrite negb_or 2!negbK.
-        case/andP => H1 H2.
-        rewrite /typ_seq in H2.
+        rewrite negb_or 2!negbK /typ_seq => /andP[H1 /andP[/RleP H2 /RleP H3]].
         apply/esym/negbTE.
-        rewrite negb_or.
-        apply/andP; split.
-          rewrite RltNge in H1.
-          apply: contra H1 => /eqP ->.
-          by rewrite leRR.
-        rewrite negb_and.
-        apply/orP; right.
-        rewrite /Rgt_bool RltNge negbK.
-        case/andP : H2 => /RleP LHS LHS'.
-        apply (@Log_increasing_le 2) in LHS => //; last exact/exp2_pos.
-        rewrite /exp2 ExpK // in LHS.
-        apply (Rmult_le_compat_l (1 / INR n.+1)) in LHS; last first.
-          apply Rle_mult_inv_pos => //.
-          fourier.
-          apply lt_0_INR; by apply/ltP.
-        rewrite mulRA mulRN {1}/Rdiv -mulRA -Rinv_l_sym in LHS; last first.
-            by apply not_0_INR.
-        rewrite mulR1 mulRDr !mulNR !mul1R in LHS.
-        have H2 : forall a b c, - a + - b <= c -> - c - a <= b.
-          move=> *; fourier.
-        apply H2 in LHS.
-        move/RleP in LHS'.
-        apply (@Log_increasing_le 2) in LHS' => //; last exact/RltP.
-        rewrite /exp2 ExpK // in LHS'.
-        apply (Rmult_le_compat_l (1 / INR n.+1)) in LHS'; last first.
-          apply Rle_mult_inv_pos => //.
-          fourier.
-          exact/lt_0_INR/ltP.
-        rewrite mulRA mulRN {2}/Rdiv -mulRA -Rinv_l_sym in LHS'; last exact/not_0_INR.
-        rewrite mulR1 mulRDr !mulNR !mul1R oppRK in LHS'.
-        have H3 : forall a b c, a <= - c + b -> - b <= - a - c by move=> *; fourier.
-        apply H3 in LHS'.
-        rewrite leR_Rabsl; apply/andP; split; apply/RleP; by rewrite mulNR.
+        rewrite negb_or; apply/andP; split; first exact/eqP/gtR_eqF/RltP.
+        rewrite negb_and H1 /= /Rgt_bool RltNge negbK.
+        apply (@Log_increasing_le 2) in H2 => //; last exact/exp2_pos.
+        rewrite /exp2 ExpK // in H2.
+        move/RleP : H2.
+        rewrite mulRC mulRN -mulNR -leR_pdivl_mulr ?oppRD; last exact/lt_0_INR/ltP.
+        move/RleP => H2.
+        have /(_ _ _ _ H2) {H2}H2 : forall a b c, - a + - b <= c -> - c - a <= b.
+          by move=> *; fourier.
+        apply (@Log_increasing_le 2) in H3 => //; last exact/RltP.
+        rewrite /exp2 ExpK // in H3.
+        move/RleP : H3.
+        rewrite mulRC mulRN -mulNR -leR_pdivr_mulr; last exact/lt_0_INR/ltP.
+        rewrite oppRD oppRK div1R mulRC mulRN => /RleP H3.
+        have /(_ _ _ _ H3) {H3}H3 : forall a b c, a <= - c + b -> - b <= - a - c.
+          by move=> *; fourier.
+        rewrite leR_Rabsl; apply/andP; split; exact/RleP.
   rewrite H1 Pr_union_disj; last first.
     apply disjoint_setI0.
     rewrite disjoints_subset.

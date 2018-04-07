@@ -152,11 +152,8 @@ move=> p [Hp0 Hp1].
 rewrite /H2.
 apply Rmult_le_reg_l with (ln 2); first by apply ln_2_pos.
 rewrite mulR1 mulRDr /log -!mulNR.
-rewrite !(mulRC (ln 2)) -!mulRA -(Rinv_l_sym (ln 2)); last exact ln_2_neq0.
-rewrite !mulR1.
-apply Rle_trans with ( - p * ln p - (1 - p) * ln (1 - p) ).
-apply Req_le; by field.
-by apply H2ln_max.
+rewrite !(mulRC (ln 2)) -!mulRA mulVR ?mulR1; last apply/eqP/ln_2_neq0.
+rewrite (mulNR (1 - p)); exact/H2ln_max.
 Qed.
 
 Lemma H2_max' (x : R): 0 <= x <= 1 -> H2 x <= 1.

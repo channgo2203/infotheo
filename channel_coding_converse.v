@@ -108,12 +108,11 @@ set n := n'.+1.
 apply (Rle_lt_trans _ (INR n.+1 ^ K * exp2 (- INR n * Delta))).
   by apply HDelta.
 move: (n0_n) => /(Rmult_lt_compat_l (/ INR n) _) => /(_ (Rinv_0_lt_compat (INR n) Rlt0n)).
-rewrite Rinv_l; last by apply not_eq_sym, Rlt_not_eq.
+rewrite mulVR ?INR_eq0 //.
 move/(Rmult_lt_compat_l epsilon _) => /(_ eps_gt0); rewrite mulR1 => H1'.
 apply: (Rle_lt_trans _ _ _ _ H1') => {H1'}.
 rewrite /n0 [in X in _ <= X]mulRC -2![in X in _ <= X]mulRA.
-rewrite Rinv_l; last by apply not_eq_sym, Rlt_not_eq.
-rewrite mulR1.
+rewrite mulVR ?mulR1; last exact/eqP/gtR_eqF.
 apply Rge_le; rewrite mulRC -2!mulRA; apply Rle_ge.
 set aux := INR _ * (_ * _).
 have aux_gt0 : 0 < aux.
@@ -129,14 +128,9 @@ apply (Rle_trans _ ((INR n.+1 / INR n) ^ K * aux)); last first.
   - apply pow_incr; split.
     + apply Rle_mult_inv_pos => //; by apply pos_INR.
     + apply Rmult_le_reg_r with (INR n) => //.
-      rewrite /Rdiv -mulRA -Rinv_l_sym; last by apply not_eq_sym, Rlt_not_eq.
-      rewrite mulR1 (_ : 2 = INR 2) // -mult_INR; apply le_INR.
-      rewrite (_ : 0 = INR 0) // in Rlt0n.
-      apply INR_lt in Rlt0n.
-      rewrite multE mul2n -addnn -addn1.
-      apply/leP.
-      by rewrite leq_add2l.
-  - by apply Rle_refl.
+      rewrite -mulRA mulVR // ?mulR1 ?INR_eq0 ?gtn_eqF // (_ : 2 = INR 2) //.
+      rewrite -mult_INR; apply/le_INR/leP; by rewrite multE -{1}(mul1n n) ltn_pmul2r.
+  - exact/Rle_refl.
 rewrite pow_mult -mulRA.
 apply Rmult_le_compat.
 - by apply/pow_ge0/ltRW/lt_0_INR/ltP.

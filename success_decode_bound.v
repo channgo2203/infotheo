@@ -53,9 +53,7 @@ set rhs := \rsum_(m | _ ) _.
 have {rhs}-> : rhs = INR #|M| - \rsum_(m in M) e(W, c) m.
   rewrite /rhs {rhs} big_split /= big_const iter_Rplus mulR1.
   by rewrite -(big_morph _ morph_Ropp oppR0).
-rewrite Rmult_minus_distr_l /Rdiv -mulRA -Rinv_l_sym; last first.
-  apply not_0_INR => abs; move: (Mnot0); by rewrite abs.
-by rewrite mul1R.
+by rewrite mulRDr -mulRA mulVR ?mulR1 ?INR_eq0 -?lt0n // mulRN.
 Qed.
 
 End scha_facts.
@@ -262,8 +260,7 @@ apply Rmax_case.
 - apply (Rle_trans _ (exp2(INR n * `I(P ; V)) / INR #|M|)); last first.
   + apply Req_le; symmetry.
     rewrite /Rminus mulRDr mulRC.
-    rewrite Rmult_opp_opp -mulRA mulRN Rinv_l; last first.
-      apply not_0_INR => /eqP; by apply/negP.
+    rewrite Rmult_opp_opp -mulRA mulRN mulVR ?INR_eq0 //.
     rewrite mulRN mulR1 /exp2 ExpD mulRC /Rdiv; f_equal.
     rewrite Exp_Ropp LogK //; exact/lt_0_INR/ltP.
   + exact/success_factor_bound_part2.

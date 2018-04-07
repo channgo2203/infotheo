@@ -243,8 +243,8 @@ apply Rplus_le_reg_l with 1.
 rewrite addRC (_ : 2 * delta - _ + _ = 2 * delta); last by field.
 rewrite (_ : 1 + - epsilon = 1 - epsilon); last by field.
 apply Rmult_le_reg_l with (/ 2); first by fourier.
-rewrite mulRA Rinv_l; last by move=> ?; fourier.
-rewrite mul1R /delta.
+rewrite mulRA mulVR ?mul1R; last exact/eqP/gtR_eqF/Rlt_R0_R2.
+rewrite /delta.
 have H1 : lambda / 2 <= / 2 * (1 - epsilon).
   apply Rle_trans with lambda.
   apply Rdiv_le; [apply Rlt_le; exact Hlambda | fourier].

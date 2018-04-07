@@ -996,7 +996,7 @@ Lemma chebyshev_inequality epsilon : 0 < epsilon ->
 Proof.
 move=> He.
 apply (Rmult_le_reg_l _ _ _ (pow_gt0 He 2)).
-rewrite [in X in _ <= X]mulRC /Rdiv -(mulRA _ (/ epsilon ^ 2) (epsilon ^ 2)) -Rinv_l_sym; [rewrite mulR1 | by apply Rgt_not_eq, pow_gt0].
+rewrite mulRCA mulRV ?mulR1; last exact/eqP/gtR_eqF/pow_gt0.
 rewrite /`V [in X in _ <= X]ExE.
 rewrite (_ : `p_ ((X \-cst `E X) \^2) = `p_ X) //.
 apply Rle_trans with (\rsum_(a in A | Rabs (X a - `E X) >b= epsilon)

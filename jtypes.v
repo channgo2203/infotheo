@@ -1182,16 +1182,9 @@ case: ifP => [/eqP |] Hcase.
   move/forallP/(_ b) : Hcase.
   move/implyP/(_ Logic.eq_refl)/eqP => ->.
   by rewrite mul0R.
-- rewrite -mulRA sum_V; f_equal.
-  rewrite in_set in Hta.
-  move/forallP/(_ a)/eqP : Hta => ->.
-  rewrite mulRA -{1}(mul1R (/ INR n)); f_equal.
-  rewrite Rinv_l // -sum_V.
-  apply/eqP.
-  move/negbT: Hcase.
-  apply contra.
-  rewrite (_ : 0 = INR 0) //.
-  by move/eqP/INR_eq => ->.
+- rewrite -mulRA sum_V; congr (_ * _).
+  move: Hta; rewrite in_set => /forallP/(_ a)/eqP ->.
+  by rewrite mulRA -{1}(mul1R (/ INR n)) mulVR // INR_eq0 -sum_V Hcase.
 Qed.
 
 Lemma output_type_out_entropy : `H (`tO( V )) = `H(P `o V).

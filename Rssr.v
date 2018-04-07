@@ -128,6 +128,14 @@ Definition ltR_eqF := Rlt_not_eq.
 Lemma leRR r : r <b= r.
 Proof. apply/RleP. by apply Rle_refl. Qed.
 
+Lemma ltR_subRL m n p : (n <b p - m) = (m + n <b p).
+Proof.
+apply/idP/idP => /RltP H; apply/RltP.
+  move/(Rplus_lt_compat_l m) : H.
+  by rewrite addRCA Rplus_opp_r addR0.
+by apply: (Rplus_lt_reg_l m); rewrite addRCA Rplus_opp_r addR0.
+Qed.
+
 Definition oppR0 := Ropp_0.
 Definition oppRK := Ropp_involutive.
 
@@ -284,7 +292,7 @@ Proof. by rewrite /Rdiv mul0R. Qed.
 
 Definition mulRV (x : R) : x != 0 -> x * / x = 1 := divRR x.
 
-(* Rinv_l_sym*)
+(* Rinv_l_sym *)
 Lemma mulVR (x : R) : x != 0 -> / x * x = 1.
 Proof. by move=> x0; rewrite mulRC mulRV. Qed.
 
@@ -299,6 +307,17 @@ move=> H; apply/RleP/(Rmult_le_reg_r z) => //.
 rewrite -mulRA mulVR ?mulR1 //; exact/eqP/gtR_eqF.
 Qed.
 
+Lemma ltR_pdivl_mulr z x y : 0 < z -> (x <b y / z) = (x * z <b y).
+Proof.
+move=> z0.
+apply/idP/idP=> [|]/RltP.
+  move/(Rmult_lt_compat_l z) => /(_ z0).
+  rewrite mulRC mulRCA mulRV ?mulR1; last exact/eqP/gtR_eqF.
+  by move/RltP.
+move=> H; apply/RltP/(Rmult_lt_reg_r z) => //.
+rewrite -mulRA mulVR ?mulR1 //; exact/eqP/gtR_eqF.
+Qed.
+
 Lemma leR_pdivr_mulr z x y : 0 < z -> (y / z <b= x) = (y <b= x * z).
 Proof.
 move=> z0.
@@ -307,6 +326,17 @@ apply/idP/idP => [|]/RleP.
   rewrite -mulRA mulVR ?mulR1; first by move/RleP.
   exact/eqP/gtR_eqF.
 move=> H; apply/RleP/(Rmult_le_reg_r z) => //.
+rewrite -mulRA mulVR ?mulR1 //; exact/eqP/gtR_eqF.
+Qed.
+
+Lemma ltR_pdivr_mulr z x y : 0 < z -> (y / z <b x) = (y <b x * z).
+Proof.
+move=> z0.
+apply/idP/idP => [|]/RltP.
+  move/(Rmult_lt_compat_r z) => /(_ z0).
+  rewrite -mulRA mulVR ?mulR1; first by move/RltP.
+  exact/eqP/gtR_eqF.
+move=> H; apply/RltP/(Rmult_lt_reg_r z) => //.
 rewrite -mulRA mulVR ?mulR1 //; exact/eqP/gtR_eqF.
 Qed.
 

@@ -107,10 +107,7 @@ apply/RltP; rewrite lt0R {1}/den -receivableE receivable_y; exact/RleP/den_nonne
 Qed.
 
 Lemma f1 : \rsum_(x in 'rV_n) f x = 1.
-Proof.
-rewrite /f /Rdiv -big_distrl /= mulRC.
-apply/Rinv_l/eqP; by rewrite -receivableE.
-Qed.
+Proof. by rewrite /f /Rdiv -big_distrl /= mulRC mulVR // -receivableE. Qed.
 
 Definition d : {dist 'rV[A]_n} := locked (makeDist f0 f1).
 

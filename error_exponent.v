@@ -31,9 +31,8 @@ split; first by apply sqrt_pos.
 apply pow2_Rle_inv; [ by apply sqrt_pos | exact/ltRW/exp_pos | ].
 rewrite [in X in X <= _]/= mulR1 sqrt_sqrt; last first.
   apply mulR_ge0; by [fourier | apply leq0cdiv].
-apply (Rmult_le_reg_r (/ 2)); first by by apply Rinv_0_lt_compat, Rlt_R0_R2.
-rewrite mulRC mulRA Rinv_l; first by rewrite mul1R.
-by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
+apply (Rmult_le_reg_r (/ 2)); first exact/Rinv_0_lt_compat/Rlt_R0_R2.
+rewrite mulRC mulRA mulVR ?mul1R //; exact/eqP/gtR_eqF/Rlt_R0_R2.
 Qed.
 
 Local Open Scope variation_distance_scope.
@@ -159,7 +158,7 @@ have Htmp : D_x no_cond 0 x /\ R_dist x 0 < mu.
     subst x.
     apply (Rle_lt_trans _ (mu * / 2)); first by apply Rmin_l.
     apply (Rmult_lt_reg_r 2); first by apply Rlt_R0_R2.
-    rewrite -mulRA Rinv_l; last by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
+    rewrite -mulRA mulVR; last by exact/eqP/gtR_eqF/Rlt_R0_R2.
     apply Rmult_lt_compat_l => //; fourier.
 move=> /(_ Htmp) {Htmp}.
 rewrite /R_dist /Rminus {2}/xlnx ltRR oppR0 addR0 Rabs_left; last first.
@@ -222,10 +221,8 @@ suff Htmp : - xlnx (sqrt (2 * (D(V || W | P)))) <= gamma.
     apply Rinv_0_lt_compat, Rplus_lt_le_0_compat.
     - exact/lt_0_INR/ltP.
     - apply mulR_ge0; by apply pos_INR.
-  rewrite -/gamma mulRA Rinv_l ?mul1R //.
-  apply not_eq_sym, Rlt_not_eq, Rplus_lt_le_0_compat.
-  - apply lt_0_INR; by apply/ltP.
-  - apply mulR_ge0; by apply pos_INR.
+  rewrite -/gamma mulRA mulVR ?mul1R //.
+  by rewrite -mult_INR -plus_INR INR_eq0 plusE multE addn_eq0 negb_and -?lt0n Bnot0.
 suff Htmp : xlnx x <= xlnx (sqrt (2 * (D(V || W | P)))).
   clear -Hx Htmp.
   apply Ropp_le_cancel; rewrite oppRK.
@@ -240,8 +237,8 @@ have Htmp : sqrt (2 * D(V || W | P)) < x.
     apply mulR_ge0; first exact/ltRW/Rlt_R0_R2.
     apply leq0cdiv=> a Ha ? ?; by apply v_dom_by_w.
   apply (Rmult_lt_reg_r (/ 2)); first by apply Rinv_0_lt_compat, Rlt_R0_R2.
-  rewrite mulRC mulRA Rinv_l; last by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
-  rewrite mul1R; apply (Rlt_le_trans _ _ _ Hcase); by apply Rmin_r.
+  rewrite mulRC mulRA mulVR ?mul1R; last exact/eqP/gtR_eqF/Rlt_R0_R2.
+  apply: (Rlt_le_trans _ _ _ Hcase); exact/Rmin_r.
 apply xlnx_sdecreasing_0_Rinv_e => //.
 - split; first by apply sqrt_pos.
   apply: (Rle_trans _ x _ (ltRW _ _ _)) => //.

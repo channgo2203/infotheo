@@ -192,8 +192,8 @@ case (total_order_T 0 r) ; first case ; move=> Hcase.
         rewrite -exp_Ropp mulRC (_ : 2 = INR 2`!) //.
         by apply exp_strict_lb, oppR_gt0.
     * apply (Rmult_le_reg_r (/ 2)); first by apply Rinv_0_lt_compat, Rlt_R0_R2.
-      rewrite mulRC mulRA Rinv_l; last by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
-      rewrite mul1R -(invRK eps); last by apply not_eq_sym, Rlt_not_eq.
+      rewrite mulRC mulRA mulVR ?mul1R //; last exact/eqP/gtR_eqF/Rlt_R0_R2.
+      rewrite -(invRK eps); last by apply not_eq_sym, Rlt_not_eq.
       rewrite -Rinv_mult_distr ; last 2 first.
         by apply not_eq_sym, Rlt_not_eq, Rinv_0_lt_compat.
         by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.

@@ -505,7 +505,7 @@ rewrite -(invRK (exp2 (INR n * `H P))%R); last by apply exp2_not_0.
 rewrite -exp2_Ropp -mulNR.
 set aux := - INR n * `H P.
 apply (Rmult_le_reg_r (exp2 aux) _ _ (exp2_pos aux)).
-rewrite Rinv_l ; last by apply exp2_not_0.
+rewrite mulVR //; last exact/eqP/exp2_not_0.
 rewrite /aux ; clear aux.
 case/boolP : [exists x, x \in T_{P}] => x_T_P.
 - case/existsP : x_T_P => ta Hta.

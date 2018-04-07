@@ -211,8 +211,8 @@ rewrite -(sqrt_Rsqr (d(P , Q))); last by apply pos_var_dist.
 apply sqrt_le_1_alt.
 apply (Rmult_le_reg_l (/ 2)); first by apply Rinv_0_lt_compat; fourier.
 apply Rle_trans with (D(P || Q)); last first.
-  rewrite mulRA Rinv_l; last by move=> ?; fourier.
-  rewrite mul1R; exact/Rle_refl.
+  rewrite mulRA mulVR // ?mul1R; last exact/eqP/gtR_eqF/Rlt_R0_R2.
+  exact/Rle_refl.
 eapply Rle_trans; last by apply Pinsker_inequality.
 rewrite (_ : forall x, Rsqr x = x ^ 2); last by move=> ?; rewrite /Rsqr /pow; field.
 apply Rmult_le_compat_r; first by apply le_sq.
