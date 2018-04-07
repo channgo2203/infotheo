@@ -30,18 +30,20 @@ Qed.
 
 Definition Hs (s : seq A) :=
  \rsum_(a in A)
+  if num_occ a s == 0%nat then 0 else
   INR (num_occ a s) / INR (size s) * log (INR (size s) / INR (num_occ a s)).
 
 Definition nHs (s : seq A) :=
  \rsum_(a in A)
+  if num_occ a s == 0%nat then 0 else
   INR (num_occ a s) * log (INR (size s) / INR (num_occ a s)).
 
 Lemma szHs_is_nHs s : INR (size s) * Hs s = nHs s.
 Proof.
 rewrite /Hs /nHs big_distrr.
 apply eq_bigr => i _ /=.
-case Hnum: (num_occ i s == O).
-  by rewrite (eqP Hnum) /Rdiv mulRA mulRC !mul0R !mulR0.
+case: ifP => Hnum.
+  by rewrite mulR0.
 rewrite /Rdiv (mulRC (INR (num_occ i s))) 2!(mulRA (INR _)).
 rewrite !mulRV ?mul1R // ?INR_eq0.
 apply/eqP => Hsz.
@@ -84,10 +86,10 @@ rewrite !szHs_is_nHs.
 rewrite /nHs -big_split /=.
 apply ler_rsum => i _.
 rewrite /num_occ count_cat size_cat.
-case Hs1: (count_mem i s1 == O).
-  rewrite (eqP Hs1) !mul0R !add0n add0R.
-  case Hs2: (count_mem i s2 == O).
-    by rewrite (eqP Hs2) !mul0R; apply Rle_refl.
+case: ifP => Hs1.
+  rewrite (eqP Hs1) !add0n add0R.
+  case: ifP => Hs2.
+    by apply Rle_refl.
   have cnt_s2_gt0: 0 < INR (count_mem i s2).
     apply lt_0_INR.
     apply /leP.
@@ -120,8 +122,8 @@ have cnt_lt_size t: INR ((count_mem i) t) <= INR (size t).
 have sz_s1_gt0: 0 < INR (size s1).
   apply (Rlt_le_trans _ _ _ cnt_s1_gt0).
   by apply cnt_lt_size.
-case Hs2: (count_mem i s2 == O).
-  rewrite (eqP Hs2) !mul0R !addn0 addR0.
+case: ifP => Hs2.
+  rewrite (eqP Hs2) !addn0 addR0 Hs1.
   apply Rmult_le_compat_l.
     by apply Rlt_le.
   apply Log_increasing_le.
@@ -132,6 +134,8 @@ case Hs2: (count_mem i s2 == O).
   apply le_INR.
   apply /leP.
   by apply leq_addr.
+case: ifP => Hs12.
+  by rewrite addn_eq0 Hs1 in Hs12.
 have cnt_s2_gt0: 0 < INR (count_mem i s2).
   apply lt_0_INR.
   apply /leP.
@@ -227,20 +231,20 @@ rewrite (eq_bigr _ (fun i _ => szHs_is_nHs i)).
 rewrite exchange_big /=.
 apply ler_rsum=> a _.
 rewrite (bigID (fun s => num_occ a s == O)) /=.
-rewrite big1; last by move=> i /eqP ->; rewrite !mul0R.
+rewrite big1; last by move=> i ->.
 rewrite num_occ_flatten.
 rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)) /=.
 rewrite [in X in _ <= X]big1 ?add0R //; last by move=> i /eqP.
 rewrite -big_filter -[in X in _ <= X]big_filter add0n.
 set ss' := [seq s <- ss | num_occ a s != O].
-(*case Hsz: (ss' == [::]).
-  rewrite (eqP Hsz) !big_nil mul0R.
-  by apply Rle_refl.*)
+case Hsz: (ss' == [::]).
+  rewrite (eqP Hsz) !big_nil eqxx.
+  apply Rle_refl.
 apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
     log (INR (size (flatten ss')) / INR (\sum_(i <- ss') num_occ a i))));
   last first.
-  case Hsum: (\sum_(i <- ss') num_occ a i == O).
-    rewrite (eqP Hsum) !mul0R.
+  case: ifP => Hsum.
+    rewrite (eqP Hsum) mul0R.
     by apply Rle_refl.
   apply Rmult_le_compat_l.
     by apply pos_INR.
@@ -272,6 +276,9 @@ apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
     by rewrite !size_cat leq_add2l.
   rewrite size_cat.
   by apply /(leq_trans IH) /leq_addl.
+rewrite (eq_bigr
+       (fun i => INR (num_occ a i) * log (INR (size i) / INR (num_occ a i))));
+  last first.
 Abort.
     
 End string_concat.
