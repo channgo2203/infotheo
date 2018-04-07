@@ -263,12 +263,9 @@ apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
      of strings containing no occurences.
      Works thanks to monotonicity of log. *)
   case: ifP => Hsum.
-    rewrite (eqP Hsum) mul0R.
-    by apply Rle_refl.
-  apply Rmult_le_compat_l.
-    by apply pos_INR.
-  apply Log_increasing_le.
-      by apply Rlt_1_2.
+    by rewrite (eqP Hsum) mul0R; right.
+  apply Rmult_le_compat_l; first by apply pos_INR.
+  apply Log_increasing_le; first by apply Rlt_1_2.
     apply Rlt_mult_inv_pos => //.
     apply/lt_0_INR/ltP.
     by rewrite lt0n Hsum.
@@ -276,8 +273,7 @@ apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
     apply /Rlt_le /invR_gt0 /lt_0_INR /ltP.
     by rewrite lt0n Hsum.
   apply /le_INR /leP.
-  rewrite !size_flatten !sumn_big_addn /ss'.
-  rewrite !big_map big_filter.
+  rewrite !size_flatten !sumn_big_addn !big_map big_filter.
   rewrite [in X in (_ <= X)%nat](bigID (fun s => num_occ a s == O)) /=.
   by apply leq_addl.
 (* Prepare to use jensen_dist_concave *)
@@ -289,8 +285,7 @@ have f_pos x : 0 < f x.
   apply Rlt_mult_inv_pos => //.
   apply /lt_0_INR /ltP.
   by rewrite lt0n Hnum // mem_tnth.
-have f_nonneg x : 0 <= f x.
-  by apply Rlt_le.
+have f_nonneg x : 0 <= f x by apply Rlt_le.
 have f_1 : \rsum_(a < size ss') (mkPosFun f_nonneg) a = 1.
   rewrite /= /f -big_distrl /= num_occ_flatten.
   rewrite (big_morph INR morph_plus_INR (erefl (INR 0))) /=.
@@ -304,9 +299,8 @@ have Hdist: (0 < #|dist_supp d|)%nat.
   rewrite /dist_supp card_gt0.
   destruct ss' => //.
   apply/eqP => /setP /(_ ord0).
-  rewrite !inE /d /= => /negbFE /eqP H0.
-  move: (f_pos ord0).
-  by rewrite H0 => /Rlt_irrefl.
+  rewrite !inE /d /= => /negbFE /eqP.
+  by apply Rgt_not_eq.
 have Hr: dist_covered (fun x => 0 < x) r d.
   move=> i Hi.
   rewrite /r /=.
@@ -333,18 +327,18 @@ rewrite (eq_bigr
      (fun i => log (INR (size i) / INR (num_occ a i)) * INR (num_occ a i)));
   last first.
   move=> i _; rewrite !mulRA -mulRA mulVR ?mulR1 //.
-  apply/eqP => Hn.
-  by rewrite Hn in Hnum'; apply Rlt_irrefl in Hnum'.
-rewrite [in X in _ <= X -> _]big_filter.
-rewrite [in X in _ <= X -> _](eq_bigr
+  by apply/eqP/Rgt_not_eq.
+(* LHS do match *)
+move/Rle_trans; apply.
+rewrite mulRC -num_occ_flatten big_filter.
+rewrite (eq_bigr
      (fun i => INR (size i) * / INR (num_occ a (flatten ss'))));
   last first.
   move=> i Hi; rewrite !mulRA -(mulRA _ (/ _)) mulVR ?mulR1 //.
   by rewrite INR_eq0.
-rewrite -[in X in _ <= X -> _]big_filter.
-rewrite -big_distrl /= -num_occ_flatten.
-rewrite -(big_morph INR morph_plus_INR (erefl (INR 0))) /= -/ss'.
-by rewrite mulRC size_flatten sumn_big_addn big_map.
+rewrite -big_filter -/ss' -big_distrl /=.
+rewrite -(big_morph INR morph_plus_INR (erefl (INR 0))).
+by rewrite size_flatten sumn_big_addn big_map; right.
 Qed.
     
 End string_concat.
