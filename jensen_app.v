@@ -226,15 +226,21 @@ Theorem concats_entropy ss :
   \rsum_(s <- ss) INR (size s) * Hs s
        <= INR (size (flatten ss)) * Hs (flatten ss).
 Proof.
+(* First simplify formula *)
 rewrite szHs_is_nHs.
 rewrite (eq_bigr _ (fun i _ => szHs_is_nHs i)) exchange_big /=.
 apply ler_rsum=> a _.
+(* Remove string containing no occurences from the sums *)
 rewrite (bigID (fun s => num_occ a s == O)) /=.
 rewrite big1; last by move=> i ->.
 rewrite num_occ_flatten.
 rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)) /=.
 rewrite [in X in _ <= X]big1 ?add0R //; last by move=> i /eqP.
+rewrite (eq_bigr
+       (fun i => log (INR (size i) / INR (num_occ a i)) * INR (num_occ a i)));
+  last by move=> i /negbTE ->; rewrite mulRC.
 rewrite -big_filter -[in X in _ <= X]big_filter add0n.
+(* ss' contains only strings with ocurrences *)
 set ss' := [seq s <- ss | num_occ a s != O].
 case Hss': (ss' == [::]).
   rewrite (eqP Hss') !big_nil eqxx.
@@ -253,6 +259,9 @@ have Hsz: 0 < INR (size (flatten ss')).
 apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
     log (INR (size (flatten ss')) / INR (\sum_(i <- ss') num_occ a i))));
   last first.
+  (* Not mentioned in the book: one has to compensate for the discarding
+     of strings containing no occurences.
+     Works thanks to monotonicity of log. *)
   case: ifP => Hsum.
     rewrite (eqP Hsum) mul0R.
     by apply Rle_refl.
@@ -271,11 +280,7 @@ apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
   rewrite !big_map big_filter.
   rewrite [in X in (_ <= X)%nat](bigID (fun s => num_occ a s == O)) /=.
   by apply leq_addl.
-rewrite big_filter.
-rewrite (eq_bigr
-       (fun i => log (INR (size i) / INR (num_occ a i)) * INR (num_occ a i)));
-  last by move=> i /negbTE ->; rewrite mulRC.
-rewrite -big_filter -/ss' mulRC.
+(* Prepare to use jensen_dist_concave *)
 set f := fun x : 'I_(size ss') =>
   INR (num_occ a (tnth (in_tuple ss') x)) / INR (num_occ a (flatten ss')).
 set r := fun x : 'I_(size ss') =>
@@ -321,8 +326,7 @@ rewrite -(big_tuple R0 Rplus (in_tuple ss') xpredT
 rewrite -(big_tuple R0 Rplus (in_tuple ss') xpredT
   (fun s:seq A =>
      INR (size s) / INR (num_occ a s) *
-     (INR (num_occ a s) / INR (num_occ a (flatten ss'))))).
-rewrite /=.
+     (INR (num_occ a s) / INR (num_occ a (flatten ss'))))) /=.
 move/(Rmult_le_compat_r (INR (num_occ a (flatten ss'))) _ _ (pos_INR _)).
 rewrite !big_distrl /=.
 rewrite (eq_bigr
@@ -340,7 +344,7 @@ rewrite [in X in _ <= X -> _](eq_bigr
 rewrite -[in X in _ <= X -> _]big_filter.
 rewrite -big_distrl /= -num_occ_flatten.
 rewrite -(big_morph INR morph_plus_INR (erefl (INR 0))) /= -/ss'.
-by rewrite size_flatten sumn_big_addn big_map.
+by rewrite mulRC size_flatten sumn_big_addn big_map.
 Qed.
     
 End string_concat.
