@@ -222,6 +222,8 @@ elim: ss => [|s ss IH] /=.
 by rewrite big_cons /= count_cat IH.
 Qed.
 
+Definition big_morph_plus_INR := big_morph INR morph_plus_INR (erefl (INR 0)).
+
 Theorem concats_entropy ss :
   \rsum_(s <- ss) INR (size s) * Hs s
        <= INR (size (flatten ss)) * Hs (flatten ss).
@@ -233,9 +235,9 @@ apply ler_rsum=> a _.
 (* Remove string containing no occurences from the sums *)
 rewrite (bigID (fun s => num_occ a s == O)) /=.
 rewrite big1; last by move=> i ->.
-rewrite num_occ_flatten.
+rewrite num_occ_flatten add0R.
 rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)) /=.
-rewrite [in X in _ <= X]big1 ?add0R //; last by move=> i /eqP.
+rewrite [in X in _ <= X]big1 //; last by move=> i /eqP.
 rewrite (eq_bigr
        (fun i => log (INR (size i) / INR (num_occ a i)) * INR (num_occ a i)));
   last by move=> i /negbTE ->; rewrite mulRC.
@@ -243,15 +245,13 @@ rewrite -big_filter -[in X in _ <= X]big_filter add0n.
 (* ss' contains only strings with ocurrences *)
 set ss' := [seq s <- ss | num_occ a s != O].
 case Hss': (ss' == [::]).
-  rewrite (eqP Hss') !big_nil eqxx.
-  apply Rle_refl.
+  by rewrite (eqP Hss') !big_nil eqxx; right.
 have Hnum (s : seq A) : s \in ss' -> num_occ a s != O.
   by rewrite /ss' mem_filter => /andP [->].
 have Hnum': 0 < INR (num_occ a (flatten ss')).
   apply /lt_0_INR /leP.
   destruct ss' => //=.
-  rewrite /num_occ count_cat.
-  apply ltn_addr.
+  rewrite /num_occ count_cat ltn_addr //.
   by rewrite lt0n Hnum // in_cons eqxx.
 have Hsz: 0 < INR (size (flatten ss')).
   apply (Rlt_le_trans _ _ _ Hnum').
@@ -288,9 +288,8 @@ have f_pos x : 0 < f x.
 have f_nonneg x : 0 <= f x by apply Rlt_le.
 have f_1 : \rsum_(a < size ss') (mkPosFun f_nonneg) a = 1.
   rewrite /= /f -big_distrl /= num_occ_flatten.
-  rewrite (big_morph INR morph_plus_INR (erefl (INR 0))) /=.
-  rewrite mulRC big_tnth /= mulVR //.
-  rewrite -(big_morph INR morph_plus_INR (erefl (INR 0))) INR_eq0.
+  rewrite big_morph_plus_INR mulRC big_tnth /= mulVR //.
+  rewrite -big_morph_plus_INR INR_eq0.
   destruct ss' => //=.
   rewrite big_ord_recl (tnth_nth [::]) /=.
   by rewrite addn_eq0 negb_and Hnum // in_cons eqxx.
@@ -305,8 +304,7 @@ have Hr: dist_covered (fun x => 0 < x) r d.
   move=> i Hi.
   rewrite /r /=.
   apply Rlt_mult_inv_pos.
-    apply /lt_0_INR /ltP.
-    apply (@leq_trans (num_occ a (tnth (in_tuple ss') i))).
+    apply /lt_0_INR /ltP /(@leq_trans (num_occ a (tnth (in_tuple ss') i))).
       by rewrite lt0n Hnum // mem_tnth.
     by apply count_size.
   apply /lt_0_INR /ltP.
@@ -334,10 +332,8 @@ rewrite mulRC -num_occ_flatten big_filter.
 rewrite (eq_bigr
      (fun i => INR (size i) * / INR (num_occ a (flatten ss'))));
   last first.
-  move=> i Hi; rewrite !mulRA -(mulRA _ (/ _)) mulVR ?mulR1 //.
-  by rewrite INR_eq0.
-rewrite -big_filter -/ss' -big_distrl /=.
-rewrite -(big_morph INR morph_plus_INR (erefl (INR 0))).
+  by move=> i Hi; rewrite !mulRA -(mulRA _ (/ _)) mulVR ?mulR1 // INR_eq0.
+rewrite -big_filter -/ss' -big_distrl -big_morph_plus_INR /=.
 by rewrite size_flatten sumn_big_addn big_map; right.
 Qed.
     
