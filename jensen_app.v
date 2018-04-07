@@ -213,4 +213,72 @@ apply Rlt_le.
 by rewrite count_cat.
 Qed.
 
+Lemma num_occ_flatten (a:A) ss :
+  num_occ a (flatten ss) = \sum_(s <- ss) num_occ a s.
+Proof.
+rewrite /num_occ.
+elim: ss => [|s ss IH] /=.
+  by rewrite big_nil.
+by rewrite big_cons /= count_cat IH.
+Qed.
+
+Theorem concats_entropy ss :
+  \rsum_(s <- ss) INR (size s) * Hs s
+  <= INR (size (flatten ss)) * Hs (flatten ss).
+Proof.
+rewrite szHs_is_nHs.
+rewrite (eq_bigr _ (fun i _ => szHs_is_nHs i)).
+rewrite exchange_big /=.
+apply ler_rsum=> a _.
+rewrite (bigID (fun s => num_occ a s == O)) /=.
+rewrite big1; last by move=> i ->.
+rewrite num_occ_flatten.
+rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)) /=.
+rewrite [in X in _ <= X]big1 ?add0R //; last by move=> i /eqP.
+rewrite -big_filter -[in X in _ <= X]big_filter add0n.
+set ss' := [seq s <- ss | num_occ a s != O].
+case Hsz: (ss' == [::]).
+  rewrite (eqP Hsz) !big_nil eqxx.
+  apply Rle_refl.
+apply (Rle_trans _ (INR (\sum_(i <- ss') num_occ a i) *
+    log (INR (size (flatten ss')) / INR (\sum_(i <- ss') num_occ a i))));
+  last first.
+  case: ifP => Hsum.
+    rewrite (eqP Hsum) mul0R.
+    by apply Rle_refl.
+  apply Rmult_le_compat_l.
+    by apply pos_INR.
+  apply Log_increasing_le.
+      by apply Rlt_1_2.
+    apply Rlt_mult_inv_pos.
+      apply /lt_0_INR /leP.
+      clearbody ss'.
+      clear -Hsum.
+      elim: ss' Hsum => [|s ss IH] /=.
+        by rewrite big_nil eqxx.
+      rewrite big_cons size_cat.
+      case Hocc: (num_occ a s == O).
+        rewrite (eqP Hocc) => /IH.
+        apply ltn_addl.
+      move=> _.
+      apply /ltn_addr /(@leq_trans (num_occ a s)).
+        by rewrite lt0n Hocc.
+      by apply count_size.
+    apply/lt_0_INR/ltP.
+    by rewrite lt0n Hsum.
+  apply Rmult_le_compat_r.
+    apply /Rlt_le /invR_gt0 /lt_0_INR /ltP.
+    by rewrite lt0n Hsum.
+  apply /le_INR /leP.
+  subst ss'; clear.
+  elim: ss => [|s ss IH] //=.
+  case: ifP => Hnum /=.
+    by rewrite !size_cat leq_add2l.
+  rewrite size_cat.
+  by apply /(leq_trans IH) /leq_addl.
+rewrite (eq_bigr
+       (fun i => INR (num_occ a i) * log (INR (size i) / INR (num_occ a i))));
+  last first.
+Abort.
+    
 End string_concat.
