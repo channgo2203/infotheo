@@ -216,11 +216,11 @@ suff Htmp : - xlnx (sqrt (2 * (D(V || W | P)))) <= gamma.
   rewrite addRA Rplus_opp_l add0R.
   apply Ropp_le_ge_contravar; rewrite -mulRA.
   apply (Rmult_le_reg_l (ln 2)); first exact: ln_2_pos.
-  rewrite mulRA mulRV ?mul1R; last exact/eqP/ln_2_neq0.
+  rewrite mulRA (mulRV _ ln2_neq0) mul1R.
   apply (Rmult_le_reg_l (/ (INR #|B| + INR #|A| * INR #|B|))).
     apply Rinv_0_lt_compat, Rplus_lt_le_0_compat.
     - exact/lt_0_INR/ltP.
-    - apply mulR_ge0; by apply pos_INR.
+    - apply mulR_ge0; exact/pos_INR.
   rewrite -/gamma mulRA mulVR ?mul1R //.
   by rewrite -mult_INR -plus_INR INR_eq0 plusE multE addn_eq0 negb_and -?lt0n Bnot0.
 suff Htmp : xlnx x <= xlnx (sqrt (2 * (D(V || W | P)))).

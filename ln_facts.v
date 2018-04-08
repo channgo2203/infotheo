@@ -181,9 +181,9 @@ case (total_order_T 0 r) ; first case ; move=> Hcase.
       rewrite -(invRK 2); last exact/not_eq_sym/Rlt_not_eq/Rlt_R0_R2.
       rewrite -mulRA ( _ : forall r, r * r = r ^ 2); last by move=> ?; rewrite /pow mulR1.
       rewrite expRV; last exact/eqP/not_eq_sym/Rlt_not_eq/oppR_gt0.
-      rewrite -Rinv_mult_distr; last 2 first.
-        by apply Rinv_neq_0_compat, not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
-        by apply pow_nonzero, Ropp_neq_0_compat, Rlt_not_eq.
+      rewrite -invRM; last 2 first.
+        apply/eqP; rewrite invR_neq0 //; exact/eqP/gtR_eqF/Rlt_R0_R2.
+        apply/eqP; rewrite pow_eq0 oppR_eq0; exact/eqP/ltR_eqF.
       rewrite -(invRK (exp X)); last by apply not_eq_sym, Rlt_not_eq, exp_pos.
       apply Rinv_lt_contravar.
         rewrite -mulRA mulRC; apply Rlt_mult_inv_pos; last fourier.
@@ -194,8 +194,8 @@ case (total_order_T 0 r) ; first case ; move=> Hcase.
     * apply (Rmult_le_reg_r (/ 2)); first by apply Rinv_0_lt_compat, Rlt_R0_R2.
       rewrite mulRC mulRA mulVR ?mul1R //; last exact/eqP/gtR_eqF/Rlt_R0_R2.
       rewrite -(invRK eps); last by apply not_eq_sym, Rlt_not_eq.
-      rewrite -Rinv_mult_distr ; last 2 first.
-        by apply not_eq_sym, Rlt_not_eq, Rinv_0_lt_compat.
+      rewrite -invRM ; last 2 first.
+        exact/gtR_eqF/invR_gt0.
         by apply not_eq_sym, Rlt_not_eq, Rlt_R0_R2.
       apply Rinv_le_contravar.
       - apply mulR_gt0; by [apply Rinv_0_lt_compat | apply Rlt_R0_R2].

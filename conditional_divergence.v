@@ -117,7 +117,7 @@ case/boolP : (V a b == 0) => [/eqP -> | Vneq0]; first by rewrite !mul0R.
 case/boolP : (W a b == 0) => [/eqP Weq0| Wneq0].
   contradict Vneq0.
   apply/negP. rewrite negbK. apply/eqP. by apply V_dom_by_W.
-rewrite JointDist.dE /= /log !Log_mult; first field;
+rewrite JointDist.dE /= /log !LogM; first field;
   apply/RltP; rewrite lt0R; apply/andP; split => //; exact/RleP/dist_nonneg.
 Qed.
 
@@ -222,14 +222,10 @@ case/boolP : (W a b == 0) => Wab0.
     move: Hx; rewrite in_set => /forallP/(_ a)/eqP => Htmp Htmp'.
     rewrite -Htmp' Pa0 in Htmp.
     symmetry in Htmp; case/Rmult_integral : Htmp; last first.
-      move=> abs.
-      suff : False by done.
-      move: abs.
-      apply Rinv_neq_0_compat.
-      apply not_0_INR; by apply/eqP.
-    rewrite (_ : 0 = INR 0) //.
-    move/INR_eq.
-    move/eqP; rewrite sum_nat_eq0 => /forall_inP/(_ b) => H; apply/eqP; by move: H => ->.
+      move => abs; exfalso.
+      move/negP : Hn; apply; by rewrite -INR_eq0 (invR_eq0 (INR n)).
+    move/eqP; rewrite INR_eq0.
+    rewrite sum_nat_eq0 => /forall_inP/(_ b) => H; apply/eqP; by move: H => ->.
   - move: (W0_V0 Pa0 Wab0) => nullV.
     rewrite nullV.
     suff : N(a, b| tuple_of_row x, tuple_of_row y) = 0%nat.

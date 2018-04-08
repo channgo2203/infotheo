@@ -65,14 +65,14 @@ wlog : Fnot0 g Gnot0 fg gspos / \rsum_{ C } f = \rsum_{ C } g.
   rewrite (_ : rhs = \rsum_(a | a \in C) (f a * log (f a / g a) - f a * log k)) in Hwlog; last first.
     rewrite /rhs.
     apply eq_bigr => a a_C.
-    rewrite /Rdiv /log Log_mult; last 2 first.
-      by apply fspos.
-      apply Rinv_0_lt_compat, mulR_gt0 => //; by apply gspos.
+    rewrite /Rdiv /log LogM; last 2 first.
+      exact/fspos.
+      apply Rinv_0_lt_compat, mulR_gt0 => //; exact/gspos.
     rewrite LogV; last first.
       apply mulR_gt0 => //; exact: gspos.
-    rewrite Log_mult //; last exact: gspos.
-    rewrite Log_mult //; last 2 first.
-      by apply fspos.
+    rewrite LogM //; last exact: gspos.
+    rewrite LogM //; last 2 first.
+      exact/fspos.
       apply Rinv_0_lt_compat; by [apply gspos | apply fspos].
     rewrite LogV; by [field | apply gspos].
   rewrite big_split /= -(big_morph _ morph_Ropp oppR0) -big_distrl /= in Hwlog.
@@ -104,9 +104,9 @@ apply Rmult_le_compat_l; first exact/ltRW/fspos.
 apply Ropp_le_cancel.
 rewrite -ln_Rinv; last first.
   apply Rlt_mult_inv_pos; by [apply fspos | apply gspos].
-rewrite Rinv_mult_distr; last 2 first.
+rewrite invRM; last 2 first.
   exact/gtR_eqF/(fspos _ C_a).
-  apply Rinv_neq_0_compat; exact/gtR_eqF/(gspos _ C_a).
+  exact/eqP/invR_neq0/eqP/gtR_eqF/(gspos _ C_a).
 rewrite invRK; last exact/gtR_eqF/(gspos _ C_a).
 rewrite mulRC.
 eapply Rle_trans.

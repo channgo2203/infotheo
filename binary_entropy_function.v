@@ -151,9 +151,8 @@ Proof.
 move=> p [Hp0 Hp1].
 rewrite /H2.
 apply Rmult_le_reg_l with (ln 2); first by apply ln_2_pos.
-rewrite mulR1 mulRDr /log -!mulNR.
-rewrite !(mulRC (ln 2)) -!mulRA mulVR ?mulR1; last apply/eqP/ln_2_neq0.
-rewrite (mulNR (1 - p)); exact/H2ln_max.
+rewrite mulR1 mulRDr /log -!mulNR !(mulRC (ln 2)) -!mulRA.
+rewrite (mulVR _ ln2_neq0) !mulR1 (mulNR (1 - p)); exact/H2ln_max.
 Qed.
 
 Lemma H2_max' (x : R): 0 <= x <= 1 -> H2 x <= 1.

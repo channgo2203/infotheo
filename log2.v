@@ -17,8 +17,8 @@ Proof. move=> x0; rewrite -ln_1; apply ln_increasing => //; exact/Rlt_0_1. Qed.
 Lemma ln_2_pos : 0 < ln 2.
 Proof. apply ln_pos; fourier. Qed.
 
-Lemma ln_2_neq0 : ln 2 <> 0.
-Proof. by apply nesym, Rlt_not_eq, ln_2_pos. Qed.
+Lemma ln2_neq0 : ln 2 != 0.
+Proof. exact/eqP/nesym/Rlt_not_eq/ln_2_pos. Qed.
 
 Lemma ln_increasing_le a b : 0 < a -> a <= b -> ln a <= ln b.
 Proof.
@@ -55,7 +55,7 @@ Proof.
 by move=> x0; rewrite /Log ln_Rinv // -mulNR.
 Qed.
 
-Lemma Log_mult n x y : 0 < x -> 0 < y -> Log n (x * y) = Log n x + Log n y.
+Lemma LogM n x y : 0 < x -> 0 < y -> Log n (x * y) = Log n x + Log n y.
 Proof. move=> *; by rewrite /Log -mulRDl ln_mult. Qed.
 
 Lemma Log_increasing_le n x y : 1 < n -> 0 < x -> x <= y -> Log n x <= Log n y.
@@ -79,7 +79,7 @@ move=> n1 Hx Hy.
 rewrite /Log /Rdiv.
 move/Rmult_eq_reg_r => H.
 apply ln_inv => //; apply H.
-exact/Rinv_neq_0_compat/gtR_eqF/ln_pos.
+exact/eqP/invR_neq0/eqP/gtR_eqF/ln_pos.
 Qed.
 
 Lemma Log_lt_inv n x y : 1 < n -> 0 < x -> 0 < y -> Log n x < Log n y -> x < y.
@@ -134,7 +134,7 @@ Proof. rewrite logexp1E; exact/RleP/RltW/RltP/invR_gt0/ln_2_pos. Qed.
 
 Definition Exp (n : R) x := exp (x * ln n).
 
-Lemma powE x n : 0 < x -> x ^ n = Exp x (INR n).
+Lemma pow_Exp x n : 0 < x -> x ^ n = Exp x (INR n).
 Proof. by move=> x0; rewrite /Exp exp_pow exp_ln. Qed.
 
 Lemma LogK n x : 1 < n -> 0 < x -> Exp n (Log n x) = x.
@@ -157,7 +157,7 @@ have : 0 < n by fourier.
 move/H => /(_ Rlt_0_1) ?; fourier.
 Qed.
 
-Lemma Exp_pos n x : 0 < Exp n x.
+Lemma Exp_gt0 n x : 0 < Exp n x.
 Proof. rewrite /Exp; exact: exp_pos. Qed.
 
 Lemma Exp_0 n : Exp n 0 = 1.
@@ -166,8 +166,7 @@ Proof. by rewrite /Exp mul0R exp_0. Qed.
 Lemma ExpD n x y : Exp n (x + y) = Exp n x * Exp n y.
 Proof. by rewrite /Exp mulRDl exp_plus. Qed.
 
-(* TODO: rename *)
-Lemma Exp_pow n : (0 < n)%nat -> forall m, Exp (INR n) (INR m) = INR (expn n m).
+Lemma Exp_INR n : (0 < n)%nat -> forall m, Exp (INR n) (INR m) = INR (expn n m).
 Proof.
 move=> n0.
 elim=> [|m IH]; first by rewrite /Exp mul0R exp_0.
@@ -206,7 +205,7 @@ Proof. by rewrite /Exp mulNR exp_Ropp. Qed.
 Definition exp2 (x : R) := Exp 2 x.
 
 Lemma exp2_pos x : 0 < exp2 x.
-Proof. rewrite /exp2 -/(Exp 2 x); exact: Exp_pos. Qed.
+Proof. exact: Exp_gt0. Qed.
 
 Lemma exp2_not_0 l : exp2 l <> 0.
 Proof. apply not_eq_sym, Rlt_not_eq ; exact (exp2_pos l). Qed.
@@ -214,11 +213,8 @@ Proof. apply not_eq_sym, Rlt_not_eq ; exact (exp2_pos l). Qed.
 Lemma exp2_0 : exp2 0 = 1.
 Proof. by rewrite /exp2 -/(Exp 2 0) Exp_0. Qed.
 
-Lemma exp2_pow2 : forall m, exp2 (INR m) = INR (expn 2 m).
-Proof.
-move=> m.
-by rewrite /exp2 -/(Exp 2 (INR m)) (_ : 2 = INR 2) // Exp_pow.
-Qed.
+Lemma exp2_INR : forall m, exp2 (INR m) = INR (expn 2 m).
+Proof. move=> m; by rewrite -Exp_INR. Qed.
 
 Lemma exp2_pow n k : exp2 (INR k * n) = (exp2 n) ^ k.
 Proof. by rewrite /exp2 /Exp -mulRA exp_pow. Qed.

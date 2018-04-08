@@ -294,11 +294,9 @@ case: ifP => [| H'].
   rewrite sum_nat_eq0.
   move/forallP/(_ b)/implyP/(_ Logic.eq_refl)/eqP => H _; by apply val_inj.
 rewrite /Rdiv => /(Rmult_integral _); case => [| abs].
-  rewrite (_ : 0%R = INR 0) //; move/INR_eq => H; by apply val_inj.
-  suff : False by done.
-  move: abs; apply Rinv_neq_0_compat.
-  rewrite (_ : 0%R = INR 0) //.
-  apply not_INR; by apply/eqP/negbT.
+  move/eqP; rewrite INR_eq0 => /eqP ?; exact/val_inj.
+exfalso.
+move/eqP : H'; apply; exact/INR_eq/invR_eq0.
 Qed.
 
 (** Upper-bound of the number of conditional types: *)
@@ -1294,13 +1292,11 @@ exists (num_co_occ_jtype ta tb).-shell ta.
     move/forallP/(_ a)/eqP => Hta_.
     move: Hta'; rewrite in_set => /forallP/(_ a)/eqP => Hta'.
     rewrite Hta' in Hta_.
-    move/Rmult_eq_reg_r : Hta_.
-    have Hn : / INR n <> R0.
-      apply Rinv_neq_0_compat, not_0_INR; by apply/eqP.
-    by move/(_ Hn)/INR_eq.
+    apply/INR_eq/esym.
+    move/Rmult_eq_reg_r : Hta_; apply.
+    apply/eqP/invR_neq0; by rewrite INR_eq0.
 - rewrite in_set.
-  apply/forallP => a.
-  apply/forallP => b.
+  apply/forallP => a. apply/forallP => b.
   by rewrite /num_co_occ_jtype /= 2!ffunE.
 Qed.
 

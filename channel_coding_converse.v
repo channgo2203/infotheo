@@ -146,26 +146,23 @@ apply Rmult_le_compat.
       apply mulR_ge0; [by apply pos_INR | exact/ltRW].
     apply: (Rle_trans _ _ _ _ (exp_lb (K.+1) nDeltaln2)) => {nDeltaln2}.
     apply Req_le.
-    rewrite Rinv_mult_distr; last 2 first.
-      by apply not_eq_sym, Rlt_not_eq, pow_gt0, Rinv_0_lt_compat.
-      by apply not_eq_sym, Rlt_not_eq.
-    rewrite mulRC Rinv_mult_distr; last 2 first.
-      apply not_eq_sym, Rlt_not_eq, lt_0_INR; apply/ltP; by apply fact_gt0.
-      apply not_eq_sym, Rlt_not_eq, mulR_gt0.
-        apply Rinv_0_lt_compat, pow_gt0, mulR_gt0 => //; by apply ln_2_pos.
-      by apply Rinv_0_lt_compat.
-    rewrite -mulRA mulRC.
-    rewrite Rinv_mult_distr; last 2 first.
-    - apply not_eq_sym, Rlt_not_eq, Rinv_0_lt_compat, pow_gt0, mulR_gt0 => //; by apply ln_2_pos.
-    - by apply not_eq_sym, Rlt_not_eq, Rinv_0_lt_compat.
+    rewrite invRM; last 2 first.
+      exact/gtR_eqF/pow_gt0/Rinv_0_lt_compat.
+      exact/gtR_eqF.
+    rewrite mulRC invRM; last 2 first.
+      by apply/eqP; rewrite INR_eq0 gtn_eqF // fact_gt0.
+      apply/nesym/ltR_eqF/mulR_gt0; last exact/Rinv_0_lt_compat.
+      apply/Rinv_0_lt_compat/pow_gt0/mulR_gt0 => //; exact/ln_2_pos.
+    rewrite -mulRA mulRC invRM; last 2 first.
+    - apply/eqP/invR_neq0; rewrite pow_eq0 mulR_eq0 negb_or ln2_neq0 andbT; exact/eqP/gtR_eqF.
+    - apply/eqP/invR_neq0; by rewrite INR_eq0.
     - rewrite invRK; last first.
-        apply not_eq_sym, Rlt_not_eq, pow_gt0, mulR_gt0 => //; by apply ln_2_pos.
-      rewrite invRK; last by apply not_eq_sym, Rlt_not_eq.
+        apply/eqP; rewrite pow_eq0 mulR_eq0 negb_or ln2_neq0 andbT; exact/eqP/gtR_eqF.
+      rewrite invRK; last by apply/eqP; rewrite INR_eq0.
       rewrite (_ : / (/ INR n) ^ K = (INR n) ^ K); last first.
-        rewrite expRV ?INR_eq0 // invRK //; apply/pow_not0/eqP; by rewrite INR_eq0.
+        rewrite expRV ?INR_eq0 // invRK //; apply/eqP/pow_not0; by rewrite INR_eq0.
       rewrite /Rdiv; congr (_ * _).
-      rewrite !Rpow_mult_distr -(tech_pow_Rmult (INR n)).
-      field.
+      by rewrite -mulRA -powS mulRC -expRM mulRA.
 Qed.
 
 End channel_coding_converse.

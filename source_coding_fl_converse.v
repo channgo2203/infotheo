@@ -111,7 +111,7 @@ apply Rle_trans with (exp2 (INR n)).
     by rewrite inE.
   apply Rle_trans with (INR #| [set: 'rV[bool]_n] |).
     apply/le_INR/leP/leq_imset_card.
-    rewrite cardsT card_matrix /= card_bool exp2_pow2 mul1n; by apply Rle_refl.
+    rewrite cardsT card_matrix /= card_bool exp2_INR mul1n; exact/Rle_refl.
 apply Exp_le_increasing => //.
 rewrite /e0 [X in _ <= _ * X](_ : _ = r); last by field.
 apply Rmult_le_reg_r with (1 / r) => //.

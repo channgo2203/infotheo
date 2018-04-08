@@ -68,9 +68,6 @@ elim; first by rewrite mul0R.
 move=> n Hn; by rewrite iterS Hn -{1}(mul1R x) -mulRDl addRC -S_INR.
 Qed.
 
-(*Lemma exp_not_0 l : (exp l <> 0)%R.
-Proof. apply not_eq_sym, Rlt_not_eq ; exact (exp_pos l). Qed.*)
-
 Lemma leR2e : 2 <= exp 1.
 Proof. apply Rlt_le, exp_ineq1; fourier. Qed.
 
@@ -80,9 +77,13 @@ Proof. rewrite -[X in _ < X]exp_0. apply exp_increasing. fourier. Qed.
 Lemma ltRinve21 : exp (-2) < 1.
 Proof. rewrite -[X in _ < X]exp_0. apply exp_increasing. fourier. Qed.
 
-Lemma Rle_inv_conv x y : 0 < x -> 0 < y -> / y <= / x -> x <= y.
+Lemma invR_le1 x : 0 < x -> (/ x <b= 1) = (1 <b= x).
+Proof. move=> x0; by rewrite -(div1R x) leR_pdivr_mulr // mul1R. Qed.
+
+(* don't use Rle_Rinv instead of Rinv_le_contravar *)
+Lemma Rle_inv_conv x y : 0 < x -> 0 < y -> (/ y <= / x) -> x <= y.
 Proof.
-move=> x_pos y_pos H.
+move=> x0 y0 H.
 rewrite -(invRK x); last by apply not_eq_sym, Rlt_not_eq.
 rewrite -(invRK y); last by apply not_eq_sym, Rlt_not_eq.
 apply Rinv_le_contravar => //; exact/invR_gt0.
@@ -124,7 +125,7 @@ move=> Ha Hb Hb' abs.
 rewrite -{1}[X in X = _]mulR1 in abs.
 apply Rmult_eq_reg_l in abs => //.
 apply Hb'.
-apply Rmult_eq_reg_r with (/ b); last exact: Rinv_neq_0_compat.
+apply Rmult_eq_reg_r with (/ b); last exact/eqP/invR_neq0/eqP.
 rewrite mulRV ?mul1R //; exact/eqP.
 Qed.
 
@@ -154,61 +155,56 @@ Proof. apply/idP/idP => /RleP ?; apply/RleP; fourier. Qed.
 
 (** Lemmas about power *)
 
-Lemma le_sq x : 0 <= x ^ 2.
+Section pow_sect.
+
+Lemma powS x n : x ^ n.+1 = x * x ^ n.
+Proof. by rewrite tech_pow_Rmult. Qed.
+
+Lemma pow_even_ge0 n x : ~~ odd n -> 0 <= x ^ n.
 Proof.
-move=> /=; case: (Rle_dec 0 x) => H; rewrite mulR1.
-by apply mulR_ge0.
-rewrite -(oppRK x) Rmult_opp_opp.
-apply mulR_ge0; by apply oppR_ge0, ltRW, Rnot_le_lt.
+move=> Hn; rewrite -(odd_double_half n) (negbTE Hn) {Hn} add0n.
+move Hm : (_./2) => m {Hm n}; elim: m => [|m ih].
+  rewrite pow_O; exact: Rle_0_1.
+rewrite doubleS 2!powS mulRA; apply/mulR_ge0 => //.
+rewrite -{2}(pow_1 x) -powS; exact: pow2_ge_0.
 Qed.
 
-Lemma sq_incr a b : 0 <= a -> 0 <= b -> a <= b -> a^2 <= b^2.
-Proof. move=> Ha Hb H. by apply pow_incr. Qed.
-
-Lemma pow2_Rle_inv a b : 0 <= a -> 0 <= b -> a^2 <= b^2 -> a <= b.
+Lemma pow2_Rle_inv a b : 0 <= a -> 0 <= b -> a ^ 2 <= b ^ 2 -> a <= b.
 Proof.
 move=> Ha Hb H.
-apply sqrt_le_1 in H; last 2 first.
-  by apply le_sq.
-  by apply le_sq.
+apply sqrt_le_1 in H; try exact: pow_even_ge0.
 by rewrite /= !mulR1 !sqrt_square in H.
 Qed.
 
-Lemma pow2_Rlt_inv a b : 0 <= a -> 0 <= b -> a^2 < b^2 -> a < b.
+Lemma pow2_Rlt_inv a b : 0 <= a -> 0 <= b -> a ^ 2 < b ^ 2 -> a < b.
 Proof.
-move=> Ha Hb H.
-apply sqrt_lt_1 in H; last 2 first.
-  by apply le_sq.
-  by apply le_sq.
+move=> ? ? H.
+apply sqrt_lt_1 in H; try exact: pow_even_ge0.
 by rewrite /= !mulR1 !sqrt_square in H.
 Qed.
 
 Lemma Rabs_sq x : Rabs x ^ 2 = x ^ 2.
 Proof.
 move=> /=.
-rewrite !mulR1 -Rabs_mult Rabs_pos_eq // (_ : _ * _ = x ^2 ).
-apply le_sq.
-by rewrite /= mulR1.
+rewrite !mulR1 -Rabs_mult Rabs_pos_eq // -{2}(pow_1 x) -powS.
+exact: pow_even_ge0.
 Qed.
 
-Lemma id_rem a b : (a - b) ^ 2 = a ^ 2 - 2 * a * b + b ^ 2.
+Lemma sqrRB a b : (a - b) ^ 2 = a ^ 2 - 2 * a * b + b ^ 2.
 Proof. rewrite /= !mulR1 !mulRDr !mulRBl /=; field. Qed.
 
-Lemma id_rem_plus a b : (a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2.
+Lemma sqrRD a b : (a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2.
 Proof. rewrite /= !mulR1 !mulRDl !mul1R !mulRDr /=; field. Qed.
 
-Lemma x_x2_eq q : q * (1 - q) = 1 / 4 - 1 / 4 * (2 * q - 1) ^ 2.
+Lemma x_x2_eq q : q * (1 - q) = / 4 - / 4 * (2 * q - 1) ^ 2.
 Proof. field. Qed.
 
-Lemma x_x2_max q : q * (1 - q) <= 1 / 4.
+Lemma x_x2_max q : q * (1 - q) <= / 4.
 Proof.
 rewrite x_x2_eq.
 have : forall a b, 0 <= b -> a - b <= a. move=>  *; fourier.
-apply.
-apply mulR_ge0; [fourier | by apply le_sq].
+apply; apply mulR_ge0; [fourier | exact: pow_even_ge0].
 Qed.
-
-Section pow_sect.
 
 Lemma pow0_inv : forall n x, x ^ n = 0 -> x = 0.
 Proof.
@@ -382,7 +378,24 @@ rewrite Rabs_right; last by apply Rle_ge.
 move=> ?; apply/andP; split; apply/RleP; fourier.
 Qed.
 
-Section exp_lb_sect.
+(* TODO: rename *)
+Lemma fact_Coq_SSR n0 : fact n0 = n0 `!.
+Proof. elim: n0 => // n0 IH /=. by rewrite IH factS mulSn -multE. Qed.
+
+Lemma combinaison_Coq_SSR n0 m0 : (m0 <= n0)%nat -> C n0 m0 = INR 'C(n0, m0).
+Proof.
+move=> ?.
+rewrite /C.
+apply Rmult_eq_reg_r with (INR (fact m0) * INR (fact (n0 - m0)%coq_nat)).
+set tmp := INR (fact m0) * _.
+rewrite -mulRA mulVR ?mulR1; last first.
+  by rewrite /tmp mulR_eq0 negb_or !INR_eq0 !fact_Coq_SSR -!lt0n !fact_gt0.
+by rewrite/tmp -!mult_INR !fact_Coq_SSR !multE !minusE bin_fact.
+apply Rmult_integral_contrapositive.
+split; apply/eqP; rewrite INR_eq0; exact/eqP/fact_neq_0.
+Qed.
+
+Section exp_lower_bound.
 
 Let exp_dev n := fun x => exp x - x ^ n * / INR (n`!).
 
@@ -399,7 +412,7 @@ Proof.
 rewrite /exp_dev derive_pt_minus derive_pt_exp; congr (_ - _).
 rewrite derive_pt_mult derive_pt_const mulR0 addR0 derive_pt_pow.
 rewrite mulRC mulRA mulRC; congr (_ * _).
-rewrite factS mult_INR Rinv_mult_distr; last 2 first.
+rewrite factS mult_INR invRM; last 2 first.
   by apply/eqP; rewrite INR_eq0.
   by apply/eqP; rewrite INR_eq0 -lt0n fact_gt0.
 by rewrite mulRC mulRA mulRV ?mul1R // INR_eq0.
@@ -432,37 +445,18 @@ Proof. move=> xpos; by apply Rgt_lt, Rminus_gt, Rlt_gt, exp_dev_gt0. Qed.
 Let exp_dev_ge0 n r : 0 <= r -> 0 <= exp_dev n r.
 Proof.
 move=> Hr.
-case/orP : (orbN (r == 0)) ; last first.
+case/boolP : (r == 0) => [/eqP ->|]; last first.
 - move=> Hr2.
   have {Hr Hr2}R_pos : 0 < r by apply/RltP; rewrite lt0R Hr2 /=; exact/RleP.
   exact/ltRW/exp_dev_gt0.
-- move=> /eqP ->.
-  move:n ; case.
-  - rewrite /exp_dev exp_0 /= Rinv_1 mul1R /Rminus Rplus_opp_r; by apply Rle_refl.
+- case: n.
+  + rewrite /exp_dev exp_0 mul1R invR1 subRR; exact: Rle_refl.
   - move=> n.
-    rewrite -(_ : 1 = exp_dev n.+1 0); first by apply Rle_0_1.
-    rewrite /exp_dev exp_0 pow_i; last by apply/ltP.
-    rewrite mul0R; by ring.
+    rewrite -(_ : 1 = exp_dev n.+1 0); first exact Rle_0_1.
+    rewrite /exp_dev exp_0 pow_i ?mul0R ?subR0 //; exact/ltP.
 Qed.
 
 Lemma exp_lb n x : 0 <= x -> x ^ n / INR (n`!) <= exp x.
 Proof. move=> xpos; by apply Rge_le, Rminus_ge, Rle_ge, exp_dev_ge0. Qed.
 
-End exp_lb_sect.
-
-(* TODO: rename, move *)
-Lemma fact_Coq_SSR n0 : fact n0 = n0 `!.
-Proof. elim: n0 => // n0 IH /=. by rewrite IH factS mulSn -multE. Qed.
-
-Lemma combinaison_Coq_SSR n0 m0 : (m0 <= n0)%nat -> C n0 m0 = INR 'C(n0, m0).
-Proof.
-move=> ?.
-rewrite /C.
-apply Rmult_eq_reg_r with (INR (fact m0) * INR (fact (n0 - m0)%coq_nat)).
-set tmp := INR (fact m0) * _.
-rewrite -mulRA mulVR ?mulR1; last first.
-  by rewrite /tmp mulR_eq0 negb_or !INR_eq0 !fact_Coq_SSR -!lt0n !fact_gt0.
-by rewrite/tmp -!mult_INR !fact_Coq_SSR !multE !minusE bin_fact.
-apply Rmult_integral_contrapositive.
-split; apply/eqP; rewrite INR_eq0; exact/eqP/fact_neq_0.
-Qed.
+End exp_lower_bound.

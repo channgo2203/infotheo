@@ -58,9 +58,7 @@ Qed.
 
 Lemma aep_sigma2_pos : 0 <= aep_sigma2.
 Proof.
-rewrite -(@V_map_mlog O ord0) /Var; apply Ex_nonneg => a.
-rewrite /map_mlog /mlog_rv /=.
-by apply le_sq.
+rewrite -(@V_map_mlog O ord0) /Var; apply Ex_nonneg => ?; exact: pow_even_ge0.
 Qed.
 
 End map_mlog_prop.

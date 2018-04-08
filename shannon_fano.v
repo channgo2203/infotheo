@@ -111,10 +111,10 @@ apply Rle_trans with (Exp (INR #|T|) (- Log (INR #|T|) (1 / P i))); last first.
   rewrite oppRK LogK //.
   exact/Rle_refl.
   by apply/RltP; rewrite (_ : 1 = INR 1) // ltR_nat card_ord.
-rewrite powE; last by apply/RltP; rewrite ltR0n card_ord.
+rewrite pow_Exp; last by apply/RltP; rewrite ltR0n card_ord.
 rewrite Exp_Ropp.
 apply/leR_inv => //.
-  rewrite inE; exact/RltP/Exp_pos.
+  rewrite inE; exact/RltP/Exp_gt0.
 apply Exp_le_increasing.
   by apply/RltP; rewrite (_ : 1 = INR 1) // ltR_nat card_ord.
 rewrite INR_Zabs_nat; last first.

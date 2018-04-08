@@ -265,15 +265,21 @@ Qed.
 Lemma invR_gt0 x : 0 < x -> 0 < / x.
 Proof. move=> x0; by apply Rinv_0_lt_compat. Qed.
 
-Lemma invR_eq0 (x : R) : (/ x = 0) -> (x = 0).
+(* Rinv_neq_0_compat : forall r : R, r <> 0 -> / r <> 0 *)
+Lemma invR_neq0 (x : R) : x != 0 -> / x != 0.
+Proof. by move/eqP/Rinv_neq_0_compat/eqP. Qed.
+
+Lemma invR_eq0 (x : R) : / x = 0 -> x = 0.
 Proof.
 move/eqP => H; apply/eqP; apply: contraTT H => H.
-by apply/eqP/Rinv_neq_0_compat/eqP.
+exact/invR_neq0.
 Qed.
 
 Definition invR1 : / 1 = 1 := Rinv_1.
 
 Definition invRK := Rinv_involutive.
+
+Definition invRM := Rinv_mult_distr.
 
 Lemma leR_inv : {in [pred x | true] & [pred x | 0 <b x], {homo Rinv : a b /~ a <= b}}.
 Proof. move=> a b; rewrite !inE => _ /RltP b0 ba; exact/Rinv_le_contravar. Qed.
@@ -340,17 +346,29 @@ move=> H; apply/RltP/(Rmult_lt_reg_r z) => //.
 rewrite -mulRA mulVR ?mulR1 //; exact/eqP/gtR_eqF.
 Qed.
 
+Lemma pow_eq0 x n : (x ^ n.+1 == 0) = (x == 0).
+Proof.
+apply/idP/idP => [/eqP H|/eqP ->]; apply/eqP; last by rewrite pow_ne_zero.
+move: (pow_nonzero x n.+1); tauto.
+Qed.
+
+Lemma pow_not0 x n : x != 0 -> x ^ n != 0.
+Proof. by move/eqP/(pow_nonzero _ n)/eqP. Qed.
+
 (* TODO: rename *)
-Lemma pow_not0 x : x <> 0 -> forall n, x ^ n <> 0.
+(*Lemma pow_not0 x : x <> 0 -> forall n, x ^ n <> 0.
 Proof.
 move=> x_not0.
 elim => [/= | n IH]; first by apply not_eq_sym, Rlt_not_eq, Rlt_0_1.
 by apply Rmult_integral_contrapositive.
-Qed.
+Qed.*)
 
 Lemma expRV x n : x != 0 -> (/ x ) ^ n = x ^- n.
 Proof.
 move/eqP => x_not0.
 elim : n => /= [ | n IH]; first by rewrite Rinv_1.
-rewrite Rinv_mult_distr //; by [ rewrite IH | apply pow_not0].
+rewrite invRM //; by [rewrite IH | apply/eqP/pow_not0/eqP].
 Qed.
+
+(*Rpow_mult_distr : forall (x y : R) (n : nat), (x * y) ^ n = x ^ n * y ^ n*)
+Definition expRM := Rpow_mult_distr.

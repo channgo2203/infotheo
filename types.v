@@ -127,11 +127,9 @@ destruct Q as [d2 f2 H2].
 rewrite /= in H.
 apply/type_eqP => /=.
 apply/eqP/ffunP => a.
-move: {H}(H a).
-rewrite H1 H2.
-move/Rmult_eq_reg_r.
-have H : / INR n.+1 <> 0 by apply/Rinv_neq_0_compat/not_0_INR/eqP.
-move/(_ H)/INR_eq => {H}H; exact: val_inj.
+apply/val_inj/INR_eq.
+move: {H}(H a); rewrite H1 H2=> /Rmult_eq_reg_r; apply.
+apply/eqP/invR_neq0; by rewrite INR_eq0.
 Qed.
 
 Definition pos_fun_of_ffun (A : finType) n (f : {ffun A -> 'I_n.+2}) : pos_fun A.
@@ -352,13 +350,11 @@ Proof.
 move: Hta.
 rewrite in_set.
 move/forallP/(_ a)/eqP.
-destruct P as [d f H] => /=.
+destruct P as [d f H] => /= Htmp.
+apply/INR_eq/esym; move: Htmp.
 rewrite H.
-move/Rmult_eq_reg_r.
-have Hn : / INR n <> 0.
-  apply Rinv_neq_0_compat.
-  apply not_0_INR; by apply/eqP.
-by move/(_ Hn)/INR_eq.
+move/Rmult_eq_reg_r; apply.
+apply/eqP/invR_neq0; by rewrite INR_eq0.
 Qed.
 
 Lemma typed_tuples_not_empty' : exists x : seq A,
@@ -441,8 +437,7 @@ congr (_ ^ _).
 rewrite /typed_tuples inE in Hx.
 move/forallP/(_ a)/eqP : Hx => Hx.
 rewrite -INR_type_fun in Hx.
-apply Rmult_eq_reg_r in Hx; last first.
-  apply Rinv_neq_0_compat, not_0_INR; by apply/eqP.
+apply Rmult_eq_reg_r in Hx; last by apply/eqP/invR_neq0; rewrite INR_eq0.
 move/INR_eq in Hx.
 rewrite Hx num_occ_alt cardsE /=.
 apply eq_card => /= n0.
@@ -474,10 +469,8 @@ rewrite (_ : \rprod_(a : A) P a ^ (type.f P) a =
     rewrite -(_ : O = type.f P a); first by rewrite !mul0R exp2_0 /pow.
     apply INR_eq.
     rewrite {1}/INR.
-      apply (Rmult_eq_reg_r ( / INR n)); last first.
-        apply Rinv_neq_0_compat, not_0_INR; by apply/eqP.
-    rewrite type_fun_type //.
-    by move/eqP : H => <-; rewrite mulR0.
+    apply (Rmult_eq_reg_r ( / INR n)); last by apply/eqP/invR_neq0; rewrite INR_eq0.
+    by rewrite type_fun_type // -(eqP H) mulR0.
 rewrite -(big_morph _ morph_exp2_plus exp2_0) -(big_morph _ (morph_mulRDl _) (mul0R _)).
 by rewrite /entropy Rmult_opp_opp mulRC.
 Qed.
@@ -653,15 +646,9 @@ case: Q HPQ => /= Qd Qf HQ HPQ.
 apply/type_eqP => /=.
 apply/eqP.
 apply ffunP => a.
-move: {HPQ}(HPQ a).
-rewrite HP HQ.
-move/Rmult_eq_reg_r.
-have H' : / INR n <> 0.
-  apply Rinv_neq_0_compat.
-  apply not_0_INR.
-  by apply/eqP.
-move/(_ H').
-move/INR_eq => ?; by apply val_inj.
+apply/val_inj/INR_eq.
+move: {HPQ}(HPQ a); rewrite HP HQ; move/Rmult_eq_reg_r; apply.
+apply/eqP/invR_neq0; by rewrite INR_eq0.
 Qed.
 
 Lemma sum_messages_types f :

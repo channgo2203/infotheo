@@ -47,15 +47,11 @@ transitivity (D(P || Q) - c * (Rabs (p - q) + Rabs ((1 - p) - (1 - q))) ^ 2).
   set tmp := (Rabs (_) + _) ^ 2.
   have -> : tmp = 4 * (p - q) ^ 2.
     rewrite /tmp (_ : 1 - p - (1 - q) = q - p); last by field.
-    rewrite id_rem_plus.
-    have -> : Rabs (q - p) = Rabs (p - q).
-      rewrite -Rabs_Ropp.
-      f_equal; by field.
-    rewrite -mulRA (_ : Rabs _ * Rabs _ = (Rabs (p - q))^2); last by rewrite /= mulR1.
-    rewrite Rabs_sq; by field.
+    rewrite sqrRD (Rabs_minus_sym q p) -mulRA -{3}(pow_1 (Rabs (p - q))).
+    rewrite -powS Rabs_sq; by field.
   rewrite [X in _ = _ + _ - X]mulRA.
   rewrite [in X in _ = _ + _ - X](mulRC c).
-  f_equal.
+  congr (_ - _).
   case: p01 => Hp1 Hp2.
   case: q01 => Hq1 Hq2.
   case/Rle_lt_or_eq_dec : Hp1 => Hp1; last first.
@@ -64,7 +60,7 @@ transitivity (D(P || Q) - c * (Rabs (p - q) + Rabs ((1 - p) - (1 - q))) ^ 2).
       move: (@P_dom_by_Q (Set2.a card_A)).
       rewrite -/pi -/qi Hqi Hq2 Rminus_diag_eq // => /(_ erefl).
       rewrite Hpi -Hp1 subR0 => ?. exfalso. fourier.
-    rewrite /log Log_mult; last 2 first.
+    rewrite /log LogM; last 2 first.
       fourier.
       apply/invR_gt0; fourier.
       rewrite LogV; last by fourier.
@@ -76,17 +72,17 @@ transitivity (D(P || Q) - c * (Rabs (p - q) + Rabs ((1 - p) - (1 - q))) ^ 2).
     move: Hp1; by rewrite abs => /Rlt_irrefl.
   rewrite /div_fct /comp /= (_ : id q = q) //.
   case/Rle_lt_or_eq_dec : Hp2 => Hp2; last first.
-    rewrite Hp2 Rminus_diag_eq // !mul0R /Rdiv /log Log_mult; last 2 first.
+    rewrite Hp2 Rminus_diag_eq // !mul0R /Rdiv /log LogM; last 2 first.
       fourier.
       exact/invR_gt0.
     rewrite Log_1 mul1R LogV //; by field.
-  rewrite /log Log_mult //; last exact/invR_gt0.
+  rewrite /log LogM //; last exact/invR_gt0.
   rewrite LogV //.
   case/Rle_lt_or_eq_dec : Hq2 => Hq2; last first.
     move: (@P_dom_by_Q (Set2.a card_A)).
     rewrite -/pi -/qi Hqi -Hq2 Rminus_diag_eq // => /(_ erefl).
     rewrite Hpi => abs. exfalso. fourier.
-  rewrite /Rdiv Log_mult; last 2 first.
+  rewrite /Rdiv LogM; last 2 first.
     fourier.
     apply/invR_gt0; fourier.
   rewrite LogV; last by fourier.
@@ -215,7 +211,7 @@ apply Rle_trans with (D(P || Q)); last first.
   exact/Rle_refl.
 eapply Rle_trans; last by apply Pinsker_inequality.
 rewrite (_ : forall x, Rsqr x = x ^ 2); last by move=> ?; rewrite /Rsqr /pow; field.
-apply Rmult_le_compat_r; first by apply le_sq.
+apply Rmult_le_compat_r; first exact: pow_even_ge0.
 apply Rinv_le_contravar.
 - apply mulR_gt0; [fourier | exact ln_2_pos].
 - rewrite -[X in _ <= X]mulR1.

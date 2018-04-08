@@ -249,9 +249,9 @@ apply (Rmult_le_reg_l ((/ (1 - p) ^ (n - d2)) * (/ p ^ d1))%R).
   by fourier.
   exact Hp.
 rewrite (mulRC ((1 - p) ^ (n - d2))) -!mulRA mulRC -!mulRA mulRV; last first.
-  apply/eqP/pow_not0 => ?; fourier.
+  apply/pow_not0; rewrite subR_eq0; apply/eqP/gtR_eqF; fourier.
 rewrite mulR1 -(mulRC (p ^ d1)) [in X in _ <= X]mulRC !mulRA mulVR ?mul1R; last first.
-  apply/eqP/pow_not0 => ?; fourier.
+  exact/pow_not0/eqP/gtR_eqF.
 rewrite -expRV; last by apply/eqP/gtR_eqF.
 rewrite -expRV; last by rewrite subR_eq0; apply/eqP/gtR_eqF; fourier.
 rewrite mulRC Rmult_pow_inv; last 2 first.
@@ -369,9 +369,7 @@ rewrite (eq_bigr (fun i => 1 / INR #|[set cw in C]| * W ``(tb | i))) in H; last 
 rewrite -rmax_distrr in H; last exact/ltRW/Hunpos.
 exists m'; split.
   exact Hm'.
-apply Rmult_eq_reg_r in H; last first.
-  apply Rinv_neq_0_compat; apply/eqP.
-  by rewrite -receivableE.
+apply Rmult_eq_reg_r in H; last by apply/eqP/invR_neq0; rewrite -receivableE.
 rewrite /= UniformSupport.E ?inE // in H; last first.
   move/subsetP : dec_img; apply.
   rewrite inE; apply/existsP; by exists tb; apply/eqP.
