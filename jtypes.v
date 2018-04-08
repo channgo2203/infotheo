@@ -94,7 +94,7 @@ move=> a.
 refine (@mkPosFun _ (pf a) _) => b.
 rewrite /pf.
 case: ifP => [_ | Hcase].
-- apply Rlt_le, Rinv_0_lt_compat, lt_0_INR; by apply/ltP.
+- exact/ltRW/invR_gt0/lt_0_INR/ltP.
 - apply Rle_mult_inv_pos; first by apply pos_INR.
   by apply/RltP; rewrite lt0R INR_eq0 Hcase /= leR0n.
 Defined.
@@ -296,7 +296,7 @@ case: ifP => [| H'].
 rewrite /Rdiv => /(Rmult_integral _); case => [| abs].
   move/eqP; rewrite INR_eq0 => /eqP ?; exact/val_inj.
 exfalso.
-move/eqP : H'; apply; exact/INR_eq/invR_eq0.
+by move: abs; apply/eqP/invR_neq0; rewrite INR_eq0 H'.
 Qed.
 
 (** Upper-bound of the number of conditional types: *)
@@ -642,8 +642,7 @@ have d0 : forall b, (0 <= d b)%R.
   move=> b.
   rewrite /d /=.
   apply mulR_ge0; first by apply pos_INR.
-  apply Rlt_le, Rinv_0_lt_compat, lt_0_INR.
-  apply/ltP; by rewrite lt0n.
+  apply/ltRW/invR_gt0/lt_0_INR/ltP; by rewrite lt0n.
 have d1 : \rsum_(b : B) d b = 1%R.
   rewrite /d -big_distrl /= -(@big_morph _ _ _ 0%R _ O _ morph_plus_INR) //.
   set lhs := \sum_i _.

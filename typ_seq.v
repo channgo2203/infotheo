@@ -67,14 +67,13 @@ Variable n : nat.
 
 Lemma TS_sup : INR #| `TS P n epsilon | <= exp2 (INR n * (`H P + epsilon)).
 Proof.
-suff Htmp : 1 >= INR #| `TS P n epsilon | * exp2 (- INR n * (`H P + epsilon)).
-  apply Rmult_le_reg_l with (exp2 (- INR n * (`H P + epsilon))).
-  by apply exp2_pos.
-  rewrite -ExpD {2}mulNR Rplus_opp_l Exp_0 mulRC; exact/Rge_le.
+suff Htmp : INR #| `TS P n epsilon | * exp2 (- INR n * (`H P + epsilon)) <b= 1.
+  apply/RleP; rewrite -(mulR1 (exp2 _)) mulRC -leR_pdivr_mulr //.
+  by rewrite /Rdiv -exp2_Ropp -mulNR.
 rewrite -(pmf1 (P `^ n)).
 rewrite (_ : _ * _ = \rsum_(x in `TS P n epsilon) (exp2 (- INR n * (`H P + epsilon)))); last first.
   by rewrite big_const iter_Rplus.
-apply/Rle_ge/ler_rsum_l => //=.
+apply/RleP/ler_rsum_l => //=.
 - move=> i; rewrite inE; by case/andP => /RleP.
 - move=> a _; exact/dist_nonneg.
 Qed.
@@ -90,25 +89,16 @@ Lemma typ_seq_definition_equiv2 x : x \in `TS P n.+1 epsilon ->
   `H P - epsilon <= - (1 / INR n.+1) * log (P `^ n.+1 x) <= `H P + epsilon.
 Proof.
 rewrite inE /typ_seq.
-case/andP => H1 H2.
-split.
-- apply Rmult_le_reg_l with (INR n.+1); first by apply lt_0_INR; apply/ltP.
-  rewrite mulNR mulRN.
-  rewrite div1R mulRA mulRV ?INR_eq0 // mul1R.
-  rewrite -[X in X <= _]oppRK.
+case/andP => H1 H2; split;
+  apply/RleP; rewrite -(Rle_pmul2l (INR n.+1)) ?ltR0n //;
+  rewrite div1R mulRA mulRN mulRV ?INR_eq0 // mulN1R; apply/RleP.
+- rewrite -[X in X <= _]oppRK.
   apply/Ropp_le_contravar/(@Exp_le_inv 2) => //.
-  rewrite LogK //; last first.
-    move/RleP in H1.
-    by eapply Rlt_le_trans; [apply exp2_pos | apply H1].
+  rewrite LogK //; last by apply/(Rlt_le_trans _ _ _ (exp2_gt0 _)); apply/RleP: H1.
   apply/RleP; by rewrite -mulNR.
-- apply Rmult_le_reg_l with (INR n.+1); first by apply lt_0_INR; apply/ltP.
-  rewrite mulNR mulRN.
-  rewrite div1R mulRA mulRV ?INR_eq0 // mul1R.
-  rewrite -[X in _ <= X]oppRK.
+- rewrite -[X in _ <= X]oppRK.
   apply/Ropp_le_contravar/(@Exp_le_inv 2) => //.
-  rewrite LogK //; last first.
-    move/RleP in H1.
-    by eapply Rlt_le_trans; [apply exp2_pos | apply H1].
+  rewrite LogK //; last by apply/(Rlt_le_trans _ _ _ (exp2_gt0 _)); apply/RleP: H1.
   apply/RleP; by rewrite -mulNR.
 Qed.
 
@@ -134,12 +124,8 @@ have -> : Pr P `^ n.+1 (`TS P n.+1 epsilon) =
   rewrite !inE.
   move LHS : (typ_seq _ _ _) => [|] //=.
   rewrite /typ_seq in LHS.
-  case/andP : LHS => LHS _.
-  symmetry.
-  apply/RltP.
-  move/RleP in LHS.
-  eapply Rlt_le_trans; last by apply LHS.
-  by apply exp2_pos.
+  case/andP : LHS => /RleP LHS _.
+  exact/esym/RltP/(Rlt_le_trans _ _ _ (exp2_gt0 _) LHS).
 set p := [set _ | _].
 move: (Pr_cplt (P `^ n.+1) p) => Htmp.
 rewrite Pr_to_cplt.
@@ -183,9 +169,8 @@ have -> : Pr P `^ n.+1 (~: p) =
         - rewrite RleNgt negbK in LHS.
           apply/esym/orP; right.
           move/RltP in LHS.
-          apply/andP; split.
-            apply/RltP; apply: Rlt_trans LHS; exact: exp2_pos.
-          apply (@Log_increasing 2) in LHS => //; last exact/exp2_pos.
+          apply/andP; split; first exact/RltP/(Rlt_trans _ _ _ (exp2_gt0 _) LHS).
+          apply (@Log_increasing 2) in LHS => //.
           move: LHS; rewrite /exp2 ExpK // => /RltP.
           rewrite mulRC mulRN -mulNR -ltR_pdivl_mulr; last exact/lt_0_INR/ltP.
           rewrite oppRD oppRK => LHS.
@@ -199,7 +184,7 @@ have -> : Pr P `^ n.+1 (~: p) =
         apply/esym/negbTE.
         rewrite negb_or; apply/andP; split; first exact/eqP/gtR_eqF/RltP.
         rewrite negb_and H1 /= /Rgt_bool RltNge negbK.
-        apply (@Log_increasing_le 2) in H2 => //; last exact/exp2_pos.
+        apply (@Log_increasing_le 2) in H2 => //.
         rewrite /exp2 ExpK // in H2.
         move/RleP : H2.
         rewrite mulRC mulRN -mulNR -leR_pdivl_mulr ?oppRD; last exact/lt_0_INR/ltP.
@@ -284,9 +269,8 @@ have H1 : 1 - epsilon <= Pr (P `^ n.+1) (`TS P n.+1 epsilon) <= 1.
 have H2 : (forall x, x \in `TS P n.+1 epsilon ->
   exp2 (- INR n.+1 * (`H P + epsilon)) <= P `^ n.+1 x <= exp2 (- INR n.+1 * (`H P - epsilon))).
   by move=> x; rewrite inE /typ_seq => /andP[/RleP ? /RleP].
-move: (@wolfowitz _ P _ (`TS _ _ _) _ _ _ _ (exp2_pos _) (exp2_pos _) H1 H2).
-rewrite mulNR exp2_Ropp {1}/Rdiv invRK; last first.
-  by apply nesym, Rlt_not_eq, exp2_pos.
+move: (wolfowitz (exp2_gt0 _) (exp2_gt0 _) H1 H2).
+rewrite mulNR exp2_Ropp {1}/Rdiv invRK; last exact/nesym/ltR_eqF.
 by case.
 Qed.
 

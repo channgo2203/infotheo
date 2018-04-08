@@ -72,7 +72,7 @@ have -> : D(P || Q) = \rsum_(a in A_ 0) P a * log (P a / Q a) +
   move=> _.
   case/Rle_lt_or_eq_dec: (dist_nonneg P a) => Pa.
     case/Rle_lt_or_eq_dec: (dist_nonneg Q a) => Qa.
-      rewrite /log LogM // ?LogV //; exact/Rinv_0_lt_compat.
+      rewrite /log LogM // ?LogV //; exact/invR_gt0.
     symmetry in Qa. rewrite (P_dom_by_Q Qa) in Pa. by apply Rlt_irrefl in Pa.
   by rewrite -Pa 2!mul0R.
 have step2 :

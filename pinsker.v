@@ -98,8 +98,7 @@ set rhs := D(_ || _).
 suff : 0 <= rhs - lhs by move=> ?; fourier.
 rewrite -pinsker_fun_p_eq.
 apply pinsker_fun_pos with p01 q01 A card_A => //.
-split; last exact: Rle_refl.
-apply Rlt_le, Rinv_0_lt_compat, mulR_gt0; [fourier | by apply ln_2_pos].
+split; [exact/ltRW/invR_gt0/mulR_gt0 | exact: Rle_refl].
 Qed.
 
 End Pinsker_2_bdist.
@@ -205,15 +204,15 @@ Lemma Pinsker_inequality_weak : d(P , Q) <= sqrt (2 * D(P || Q)).
 Proof.
 rewrite -(sqrt_Rsqr (d(P , Q))); last by apply pos_var_dist.
 apply sqrt_le_1_alt.
-apply (Rmult_le_reg_l (/ 2)); first by apply Rinv_0_lt_compat; fourier.
+apply (Rmult_le_reg_l (/ 2)); first by apply invR_gt0; fourier.
 apply Rle_trans with (D(P || Q)); last first.
-  rewrite mulRA mulVR // ?mul1R; last exact/eqP/gtR_eqF/Rlt_R0_R2.
+  rewrite mulRA mulVR // ?mul1R; last exact/eqP/gtR_eqF.
   exact/Rle_refl.
 eapply Rle_trans; last by apply Pinsker_inequality.
 rewrite (_ : forall x, Rsqr x = x ^ 2); last by move=> ?; rewrite /Rsqr /pow; field.
 apply Rmult_le_compat_r; first exact: pow_even_ge0.
 apply Rinv_le_contravar.
-- apply mulR_gt0; [fourier | exact ln_2_pos].
+- exact/mulR_gt0.
 - rewrite -[X in _ <= X]mulR1.
   apply Rmult_le_compat_l; first by fourier.
   rewrite [X in _ <= X](_ : 1%R = ln (exp 1)); last by rewrite ln_exp.

@@ -494,12 +494,10 @@ Proof. move=> a b ab; by rewrite -(row_of_tupleK b) -ab row_of_tupleK. Qed.
 
 Lemma card_typed_tuples : INR #| T_{ P } | <= exp2 (INR n * `H P).
 Proof.
-rewrite -(invRK (exp2 (INR n * `H P))%R); last by apply exp2_not_0.
+rewrite -(invRK (exp2 (INR n * `H P))%R) => //.
 rewrite -exp2_Ropp -mulNR.
 set aux := - INR n * `H P.
-apply (Rmult_le_reg_r (exp2 aux) _ _ (exp2_pos aux)).
-rewrite mulVR //; last exact/eqP/exp2_not_0.
-rewrite /aux ; clear aux.
+apply/RleP; rewrite -div1R leR_pdivl_mulr //; apply/RleP; rewrite {}/aux.
 case/boolP : [exists x, x \in T_{P}] => x_T_P.
 - case/existsP : x_T_P => ta Hta.
   rewrite -(row_of_tupleK ta) in Hta.
@@ -633,12 +631,10 @@ rewrite Rplus_comm big1 ; last first.
   move=> P ; rewrite andTb negb_exists => HP.
   apply big_pred0 => m /=.
   apply/negP/negPn; by move:HP => /forallP/(_ m) ->.
-rewrite Rplus_0_l big_imset.
+rewrite /= add0R big_imset.
   apply eq_big => [P|P _] //=.
   rewrite in_set.
-  case: set0Pn.
-    by move/existsP.
-  move=> H; by apply/existsP.
+  case: set0Pn => [/existsP //| ?]; exact/existsP.
 move=> P Q; rewrite 2!in_set => HP HQ HPQ /=.
 move: (enc_pre_img_injective HP HPQ) => {HP HQ HPQ}HPQ.
 case: P HPQ => /= Pd Pf HP HPQ.
@@ -690,12 +686,7 @@ Definition tcode_untyped_code := mkCode
 
 Lemma tcode_typed_prop (m : M) : tuple_of_row ((enc tcode_untyped_code) m) \in T_{P}.
 Proof.
-rewrite /= ffunE.
-case: ifP => [| _].
-  exact.
-rewrite /def.
-rewrite row_of_tupleK.
-exact Hdef.
+rewrite /= ffunE; case: ifP => [//| _]; rewrite /def row_of_tupleK; exact Hdef.
 Qed.
 
 Definition tcode : typed_code B M P := mkTypedCode tcode_typed_prop.

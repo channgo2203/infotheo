@@ -713,14 +713,10 @@ have [k Hk] : exists k, (log (INR k.+1) / INR n = r)%R.
   exists (Zabs_nat k).-1.
   rewrite prednK; last first.
     apply/ltP/INR_lt.
-    rewrite INR_Zabs_nat.
-      rewrite -Hn2; by apply exp2_pos.
-    apply le_IZR.
-    rewrite -Hn2; exact/ltRW/exp2_pos.
+    rewrite INR_Zabs_nat; [by rewrite -Hn2 | apply le_IZR; by rewrite -Hn2].
   apply Rmult_eq_reg_l with (INR n); last by apply/eqP; rewrite INR_eq0 -lt0n.
   rewrite mulRCA mulRV ?INR_eq0 -?lt0n // mulR1 -(exp2K (INR n * r)) Hn2 INR_Zabs_nat //.
-  apply le_IZR.
-  rewrite -Hn2; exact/ltRW/exp2_pos.
+  apply le_IZR; by rewrite -Hn2.
 set M := [finType of 'I_k.+1].
 exists [finType of 'I_k.+1].
 split; first by rewrite /= card_ord.
@@ -919,8 +915,8 @@ have [n Hn] : exists n, n_condition W P r epsilon0 n.
 case: (random_coding_good_code (ltRW _ _ Hepsilon) Hepsilon0 Hn) =>
   M [HM [M_k H]].
 case: (good_code_sufficient_condition HM H) => f Hf.
-exists n, M, (mkCode f (jtdec P W epsilon0 f)); split; last assumption.
-rewrite /CodeRate M_k INR_Zabs_nat; last by apply Int_part_pos, ltRW, exp2_pos.
+exists n, M, (mkCode f (jtdec P W epsilon0 f)); split => //.
+rewrite /CodeRate M_k INR_Zabs_nat; last exact/Int_part_pos.
 suff Htmp : IZR (Int_part (exp2 (INR n * r))) = exp2 (INR n * r).
   rewrite Htmp exp2K /Rdiv -mulRA mulRCA mulRV ?INR_eq0 -?lt0n ?mulR1 //; by case: Hn.
 apply frac_Int_part; by case: Hn => _ [_ []].

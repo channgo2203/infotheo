@@ -152,7 +152,7 @@ rewrite div1R -invRM.
 rewrite (eq_bigr (fun t => 1 / INR #|C| * W ``(y | t))); last first.
   move=> *; by rewrite UniformSupport.E.
 rewrite -big_distrr /=; apply Rmult_integral_contrapositive; split.
-  rewrite div1R => /invR_eq0; exact/eqP.
+  apply/eqP; rewrite div1R; exact/invR_neq0.
 by apply/eqP; rewrite -not_receivable_uniformE Hy.
 Qed.
 

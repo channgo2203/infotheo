@@ -81,7 +81,7 @@ elim.
   rewrite /rvar2tuple1 /= mxE /=.
   f_equal.
   apply FunctionalExtensionality.functional_extensionality => ta.
-  by rewrite big_ord_recl big_ord0 Rplus_0_r.
+  by rewrite big_ord_recl big_ord0 addR0.
 - move=> n IHn.
   rewrite [X in _ \=isum X](_ : _ = row_mx (\row_(i < 1) (--log P)) (map_mlog n.+1 P)); last first.
     apply/matrixP => a b; rewrite {a}(ord1 a) !mxE.

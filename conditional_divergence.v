@@ -2,7 +2,7 @@
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq path.
 From mathcomp Require Import div choice fintype tuple finfun bigop prime.
 From mathcomp Require Import binomial ssralg finset fingroup finalg matrix.
-Require Import Reals Fourier Rpower.
+Require Import Reals Fourier.
 Require Import Reals_ext ssr_ext ssralg_ext Rssr log2 Rbigop ln_facts.
 Require Import num_occ proba entropy channel divergence types jtypes.
 
@@ -222,8 +222,7 @@ case/boolP : (W a b == 0) => Wab0.
     move: Hx; rewrite in_set => /forallP/(_ a)/eqP => Htmp Htmp'.
     rewrite -Htmp' Pa0 in Htmp.
     symmetry in Htmp; case/Rmult_integral : Htmp; last first.
-      move => abs; exfalso.
-      move/negP : Hn; apply; by rewrite -INR_eq0 (invR_eq0 (INR n)).
+      by move/eqP/invR_eq0; rewrite INR_eq0 (negbTE Hn).
     move/eqP; rewrite INR_eq0.
     rewrite sum_nat_eq0 => /forall_inP/(_ b) => H; apply/eqP; by move: H => ->.
   - move: (W0_V0 Pa0 Wab0) => nullV.

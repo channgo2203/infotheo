@@ -184,7 +184,7 @@ Lemma dom_by_uniform {A : finType} (P : dist A) n (HA : #|A| = n.+1) :
 Proof.
 move=> a; rewrite /Uniform.d /= /Uniform.f /= HA div1R => /esym abs.
 exfalso.
-move: abs; exact/Rlt_not_eq/Rinv_0_lt_compat/lt_0_INR/ltP.
+move: abs; exact/ltR_eqF/invR_gt0/lt_0_INR/ltP.
 Qed.
 
 Module UniformSupport.
@@ -394,7 +394,7 @@ Proof.
 rewrite /f; case: ifPn => [/eqP ->|ab]; first by rewrite !eqxx.
 apply/idP/idP => [|]; last by rewrite eq_sym (negbTE ab).
 rewrite mulR_eq0 => /orP[]; first by rewrite (negbTE Xa0).
-by move/eqP/invR_eq0/eqP; rewrite subR_eq0 eq_sym (negbTE Xb1).
+by move/invR_eq0; rewrite subR_eq0 eq_sym (negbTE Xb1).
 Qed.
 
 Lemma f_0 a : X a = 0 -> f a = 0.
@@ -542,13 +542,9 @@ have H4 : INR #|A| * alpha <= \rsum_(x in A) P `^ _ x.
   apply: Rle_trans; first exact: H4.
   apply Req_le, eq_bigl => i; by rewrite andbC.
 case: H1 => H1 H1'.
-split.
-  apply Rmult_le_reg_l with beta => //.
-  rewrite mulRCA mulRV // ?mulR1; last exact/eqP/nesym/Rlt_not_eq.
-  rewrite mulRC; by eapply Rle_trans; eauto.
-apply Rmult_le_reg_l with alpha => //.
-rewrite mulRCA mulRV // ?mulR1; last exact/eqP/nesym/Rlt_not_eq.
-rewrite mulRC; by eapply Rle_trans; eauto.
+split; apply/RleP.
+- rewrite leR_pdivr_mulr //; apply/RleP; move/Rle_trans : H1; exact.
+- rewrite leR_pdivl_mulr //; apply/RleP; exact: (Rle_trans _ _ _ H4).
 Qed.
 
 End wolfowitz_counting.
@@ -913,7 +909,7 @@ Lemma Ex_lb (r : R) : r * Pr[ X >= r] <= `E X.
 Proof.
 rewrite ExE.
 rewrite (bigID [pred a' | X a' >b= r]) /=.
-rewrite -[a in a <= _]Rplus_0_r.
+rewrite -[a in a <= _]addR0.
 apply Rplus_le_compat; last first.
   apply rsumr_ge0 => a _.
   apply mulR_ge0; by [apply X_nonneg | apply dist_nonneg].
@@ -925,11 +921,8 @@ Qed.
 
 Lemma markov (r : R) : 0 < r -> Pr[X >= r] <= `E X / r.
 Proof.
-move=> r0.
-rewrite /Rdiv.
-apply: (Rmult_le_reg_l r) => //.
-rewrite mulRCA mulRV ?mulR1; last exact/eqP/gtR_eqF.
-exact: Ex_lb.
+move=> ?; apply/RleP.
+rewrite /Rdiv leR_pdivl_mulr // mulRC; exact/RleP/Ex_lb.
 Qed.
 
 End markov_inequality.
@@ -990,10 +983,9 @@ Variable X : rvar A.
 Lemma chebyshev_inequality epsilon : 0 < epsilon ->
   Pr `p_X [set a | Rabs (X a - `E X) >b= epsilon] <= `V X / epsilon ^ 2.
 Proof.
-move=> He.
-apply (Rmult_le_reg_l _ _ _ (pow_gt0 He 2)).
-rewrite mulRCA mulRV ?mulR1; last exact/eqP/gtR_eqF/pow_gt0.
-rewrite /`V [in X in _ <= X]ExE.
+move=> He; apply/RleP.
+rewrite leR_pdivl_mulr; last exact/pow_gt0.
+apply/RleP; rewrite mulRC /`V [in X in _ <= X]ExE.
 rewrite (_ : `p_ ((X \-cst `E X) \^2) = `p_ X) //.
 apply Rle_trans with (\rsum_(a in A | Rabs (X a - `E X) >b= epsilon)
     (((X \-cst `E X) \^2) a  * `p_X a)%R); last first.

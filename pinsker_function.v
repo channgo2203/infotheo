@@ -117,7 +117,7 @@ rewrite /pinsker_function_spec.
 rewrite derive_pt_minus.
 rewrite derive_pt_opp.
 rewrite derive_pt_comp.
-rewrite derive_pt_log.
+rewrite derive_pt_Log.
 rewrite derive_pt_mult.
 rewrite derive_pt_pow.
 rewrite derive_pt_const.
@@ -151,7 +151,7 @@ apply Rle_trans with ((2 - 8 * t * (1 - t)) / (2 * (1 - t) * ln 2)); last first.
 apply Rle_mult_inv_pos; last first.
   rewrite mulRC mulRA.
   apply mulR_gt0.
-    apply mulR_gt0; by [apply ln_2_pos | fourier].
+    apply mulR_gt0 => //; fourier.
   case: Ht => ? ?; fourier.
 have H2 : -2 <= - 8 * t * (1 - t).
   rewrite !mulNR -mulRA.
@@ -225,7 +225,7 @@ rewrite derive_pt_opp.
 destruct Hp' as [Hp'1 Hp'2].
 rewrite derive_pt_pinsker_fun //; last by split; fourier.
 rewrite /pinsker_fun' /div_fct.
-have Hlocal : 0 <= / ln 2 by apply Rlt_le, Rinv_0_lt_compat, ln_2_pos.
+have Hlocal : 0 <= / ln 2 by exact/ltRW/invR_gt0.
 have X : 0 <= (/ (t * (1 - t) * ln 2) - 8 * c).
   have : forall a b, b <= a -> 0 <= a - b. move=> *; fourier. apply.
   apply Rle_trans with (4 / ln 2).
@@ -268,7 +268,7 @@ rewrite /pinsker_fun' /div_fct.
 have X : 0 <= (/ (t * (1 - t) * ln 2) - 8 * c).
   have : forall a b, b <= a -> 0 <= a - b by move=> *; fourier.
   apply.
-  have Hlocal : 0 <= / ln 2 by apply Rlt_le, Rinv_0_lt_compat, ln_2_pos.
+  have Hlocal : 0 <= / ln 2 by exact/ltRW/invR_gt0.
   have Hlocal2 : t * (1 - t) <> 0 by apply nesym, Rlt_not_eq, mulR_gt0; fourier.
   apply Rle_trans with (4 / ln 2).
     apply Rle_trans with (8 * / (2 * ln 2)).
