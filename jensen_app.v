@@ -82,7 +82,7 @@ Qed.
 
 Definition big_morph_plus_INR := big_morph INR morph_plus_INR (erefl (INR 0)).
 
-Hint Resolve Rle_refl.
+Hint Resolve Rle_refl pos_INR.
 
 Theorem concats_entropy ss :
   \rsum_(s <- ss) INR (size s) * Hs s
@@ -124,8 +124,8 @@ apply (Rle_trans _ (INR (\sum_(i <- ss') N(a|i)) *
      Works thanks to monotonicity of log. *)
   case: ifP => Hsum.
     by rewrite (eqP Hsum) mul0R.
-  apply Rmult_le_compat_l; first by apply pos_INR.
-  apply Log_increasing_le; first by apply Rlt_1_2.
+  apply Rmult_le_compat_l => //.
+  apply Log_increasing_le => //.
     apply Rlt_mult_inv_pos => //.
     apply/lt_0_INR/ltP.
     by rewrite lt0n Hsum.
