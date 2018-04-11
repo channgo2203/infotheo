@@ -153,8 +153,7 @@ have f_1 : \rsum_(a < size ss') (mkPosFun f_nonneg) a = 1.
   by rewrite addn_eq0 negb_and -lt0n Hnum // in_cons eqxx.
 set d := mkDist f_1.
 have Hr: forall i, r i > 0.
-  move=> i.
-  rewrite /r /=.
+  rewrite /r /= => i.
   apply Rlt_mult_inv_pos.
     apply /lt_0_INR /ltP /(@leq_trans (num_occ a (tnth (in_tuple ss') i))).
       by rewrite Hnum // mem_tnth.
