@@ -94,8 +94,8 @@ apply ler_rsum=> a _.
 rewrite (bigID (fun s => num_occ a s == O)) /=.
 rewrite big1; last by move=> i ->.
 rewrite num_occ_flatten add0R.
-rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)) /=.
-rewrite [in X in _ <= X]big1 //; last by move=> i /eqP.
+rewrite [in X in _ <= X](bigID (fun s => num_occ a s == O)).
+rewrite [in X in _ <= X]big1 //=; last by move=> i /eqP.
 rewrite (eq_bigr
        (fun i => log (INR (size i) / INR (num_occ a i)) * INR (num_occ a i)));
   last by move=> i /negbTE ->; rewrite mulRC.
