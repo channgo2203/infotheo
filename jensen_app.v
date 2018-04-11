@@ -152,12 +152,6 @@ have f_1 : \rsum_(a < size ss') (mkPosFun f_nonneg) a = 1.
   rewrite big_ord_recl /= (tnth_nth [::]) /=.
   by rewrite addn_eq0 negb_and -lt0n Hnum // in_cons eqxx.
 set d := mkDist f_1.
-have Hdist: (0 < #|dist_supp d|)%nat.
-  rewrite /dist_supp card_gt0.
-  destruct ss' => //.
-  apply/eqP => /setP /(_ ord0).
-  rewrite !inE /d /= => /negbFE /eqP.
-  exact/gtR_eqF.
 have Hr: forall i, r i > 0.
   move=> i.
   rewrite /r /=.
@@ -167,7 +161,7 @@ have Hr: forall i, r i > 0.
     by apply count_size.
   apply /lt_0_INR /ltP.
   by rewrite Hnum // mem_tnth.
-move: (jensen_dist_concave log_concave Hdist Hr).
+move: (jensen_dist_concave log_concave d Hr).
 rewrite /d /f /r /=.
 rewrite -(big_tuple _ _ _ xpredT
   (fun s =>
