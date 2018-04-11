@@ -160,8 +160,7 @@ have Hr: forall i, r i > 0.
     apply /lt_0_INR /ltP /(@leq_trans (N(a|tnth (in_tuple ss') i))).
       by rewrite Hnum // mem_tnth.
     by apply count_size.
-  apply /lt_0_INR /ltP.
-  by rewrite Hnum // mem_tnth.
+  by apply /lt_0_INR /ltP; rewrite Hnum // mem_tnth.
 move: (jensen_dist_concave log_concave d Hr).
 rewrite /d /f /r /=.
 rewrite -(big_tuple _ _ _ xpredT
