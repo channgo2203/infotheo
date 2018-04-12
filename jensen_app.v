@@ -63,16 +63,24 @@ Admitted.
 
 Definition simplR := (add0R, addR0, subR0, mul0R, mulR0, mul1R, mulR1).
 
-Lemma log_concave : concave_in (fun x => 0 < x) log.
+Lemma Rpos_convex : convex_interval (fun x =>  0 <b x).
 Proof.
-move=> x y t Hx Hy Ht.
-split; first by apply log_concave_gt0.
+move=> x y t /RltP Hx /RltP Hy Ht; apply /RltP.
 case Ht0: (t == 0); first by rewrite (eqP Ht0) !simplR.
 apply Rplus_lt_le_0_compat.
   apply mulR_gt0 => //.
   case/proj1: Ht Ht0 => // ->; by rewrite eqxx.
 apply Rmult_le_pos; [apply (Rplus_le_reg_l t) | by apply Rlt_le].
 rewrite addR0 Rplus_minus; exact/(proj2 Ht).
+Qed.
+
+Definition Rpos_interval := mkInterval Rpos_convex.
+
+Lemma log_concave : concave_in Rpos_interval log.
+Proof.
+move=> x y t.
+rewrite !inE /= => /RltP Hx /RltP Hy Ht.
+by apply log_concave_gt0.
 Qed.
 
 Lemma num_occ_flatten (a:A) ss :
@@ -167,9 +175,9 @@ have f_1 : \rsum_(a < size ss')
   rewrite addn_eq0 negb_and -lt0n Hnum //.
   by rewrite in_cons eqxx.
 set d := mkDist f_1.
-have Hr: forall i, r i > 0.
-  rewrite /r /= => i.
-  apply Rlt_mult_inv_pos.
+have Hr: forall i, r i \in Rpos_interval.
+  move=> i; rewrite /r inE /=.
+  apply /RltP /Rlt_mult_inv_pos.
     apply /lt_0_INR /ltP /(@leq_trans N(a|tnth (in_tuple ss') i)).
       by rewrite Hnum // mem_tnth.
     by apply count_size.
