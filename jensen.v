@@ -12,21 +12,12 @@ Import Prenex Implicits.
 
 Section interval.
 
-Definition convex_interval (D : R -> bool) := forall x y t,
+Definition convex_interval (D : R -> Prop) := forall x y t,
   D x -> D y -> 0 <= t <= 1 -> D (t * x + (1-t) * y).
 
 Record interval := mkInterval {
-  mem_interval :> R -> bool;
-  interval_convex0 : convex_interval mem_interval }.
-Canonical mem_interval_predType := mkPredType mem_interval.
-
-Definition interval_convex (D : interval) x y t (Hx : x \in D) (Hy : y \in D) :=
-  interval_convex0 (t:=t) Hx Hy.
-
-Lemma mem_intervalE D (H : convex_interval D) x : x \in mkInterval H = D x.
-Proof. by []. Qed.
-
-Definition inE := (mem_intervalE, inE).
+  mem_interval :> R -> Prop;
+  interval_convex : convex_interval mem_interval }.
 
 End interval.
 
@@ -39,7 +30,7 @@ Definition convex (f : R -> R) := forall x y t : R,
   0 <= t <= 1 -> convex_leq f x y t.
 
 Definition convex_in (D : interval) (f : R -> R) := forall x y t : R,
-  x \in D -> y \in D -> 0 <= t <= 1 -> convex_leq f x y t.
+  D x -> D y -> 0 <= t <= 1 -> convex_leq f x y t.
 
 Definition strictly_convex (f : R -> R) := forall x y t : R,
   x != y -> 0 < t < 1 -> convex_leq f x y t.
@@ -55,7 +46,7 @@ Definition concave (f : R -> R) := forall x y t : R,
   0 <= t <= 1 -> concave_leq f x y t.
 
 Definition concave_in (D : interval) (f : R -> R) := forall x y t : R,
-  x \in D -> y \in D -> 0 <= t <= 1 -> concave_leq f x y t.
+  D x -> D y -> 0 <= t <= 1 -> concave_leq f x y t.
 
 Definition strictly_concave (f : R -> R) := forall x y t : R,
   x != y -> 0 < t < 1 -> concave_leq f x y t.
@@ -98,11 +89,11 @@ Qed.
 Hint Resolve Rle_refl.
 
 Lemma jensen_dist (r : A -> R) (X : dist A) :
-  (forall a, r a \in D) ->
+  (forall a, D (r a)) ->
   f (\rsum_(a in A) r a * X a) <= \rsum_(a in A) f (r a) * X a.
 Proof.
 move=> HDr.
-apply (@proj1 _ (\rsum_(a in dist_supp X) r a * X a \in D)).
+apply (@proj1 _ (D (\rsum_(a in dist_supp X) r a * X a))).
 rewrite [in X in _ <= X]rsum_dist_supp [in X in X <= _]rsum_dist_supp /=.
 apply: (@dist_ind A (fun X =>
    f (\rsum_(a in dist_supp X) r a * X a) <=
@@ -163,7 +154,7 @@ Qed.
 
 Local Open Scope proba_scope.
 
-Lemma Jensen (X : rvar A) : (forall x, X x \in D) ->
+Lemma Jensen (X : rvar A) : (forall x, D (X x)) ->
   f (`E X) <= `E (mkRvar (`p_ X) (fun x => f (X x))).
 Proof. move=> HDX; rewrite !ExE /=; by apply jensen_dist. Qed.
 
@@ -188,7 +179,7 @@ by apply concave_f.
 Qed.
 
 Lemma jensen_dist_concave (r : A -> R) (X : dist A) :
-  (forall x, r x \in D) ->
+  (forall x, D (r x)) ->
   \rsum_(a in A) f (r a) * X a <= f (\rsum_(a in A) r a * X a).
 Proof.
 move=> HDr.
