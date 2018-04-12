@@ -74,7 +74,9 @@ apply Rmult_le_pos; [apply (Rplus_le_reg_l t) | by apply Rlt_le].
 rewrite addR0 Rplus_minus; exact/(proj2 Ht).
 Qed.
 
-Lemma log_concave : concave_in (mkInterval Rpos_convex) log.
+Definition Rpos_interval := mkInterval Rpos_convex.
+
+Lemma log_concave : concave_in Rpos_interval log.
 Proof. by move=> x; apply log_concave_gt0. Qed.
 
 Lemma num_occ_flatten (a:A) ss :
@@ -169,7 +171,7 @@ have f_1 : \rsum_(a < size ss')
   rewrite addn_eq0 negb_and -lt0n Hnum //.
   by rewrite in_cons eqxx.
 set d := mkDist f_1.
-have Hr: forall i, mkInterval Rpos_convex (r i).
+have Hr: forall i, Rpos_interval (r i).
   rewrite /r /= => i.
   apply Rlt_mult_inv_pos.
     apply /lt_0_INR /ltP /(@leq_trans N(a|tnth (in_tuple ss') i)).
