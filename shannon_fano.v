@@ -80,20 +80,11 @@ End Encoding.
 Coercion encoding_coercion (A T : finType) (c : Encoding.t A T) : {ffun A -> seq T} :=
  let: @Encoding.mk _ _ f _ := c in f.
 
-Section average_length.
-
-Variables (A T : finType) (P : {dist A}).
-Variable f : {ffun A -> seq T}. (* encoding function *)
-
-Definition average := \rsum_(x in A) P x * (size (f x))%:R.
-
-End average_length.
-
 Section shannon_fano_def.
 
 Variables (A T : finType) (P : {dist A}).
 
-Definition is_shannon_fano_code (f : Encoding.t A T) :=
+Definition is_shannon_fano (f : Encoding.t A T) :=
   forall s, size (f s) = Zabs_nat (ceil (Log (INR #|T|) (1 / P s)%R)).
 
 End shannon_fano_def.
@@ -109,12 +100,11 @@ Variable t' : nat.
 Let t := t'.+2.
 Let T := [finType of 'I_t].
 Variable (f : Encoding.t A T).
-Hypothesis shannon_fano : is_shannon_fano_code P f.
 
 Let sizes := [seq (size \o f) a| a in A].
-
-Lemma shannon_fano_is_kraft : kraft_condR T sizes.
+Lemma shannon_fano_is_kraft : is_shannon_fano P f -> kraft_condR T sizes.
 Proof.
+move=> H.
 rewrite /kraft_condR -(pmf1 P).
 rewrite /sizes size_map.
 rewrite (eq_bigr (fun i:'I_(size(enum A)) => #|'I_t|%:R ^- size (f (nth a (enum A) i)))); last first.
@@ -123,7 +113,7 @@ rewrite -(big_mkord xpredT (fun i => #|T|%:R ^- size (f (nth a (enum A) i)))).
 rewrite -(big_nth a xpredT (fun i => #|'I_t|%:R ^- size (f i))).
 rewrite enumT.
 apply ler_rsum => i _.
-rewrite shannon_fano.
+rewrite H.
 have Pi0 : 0 < P i by apply/RltP; rewrite lt0R Pr_pos; exact/RleP/dist_nonneg.
 apply Rle_trans with (Exp #|T|%:R (- Log #|T|%:R (1 / P i))); last first.
   rewrite div1R LogV //.
@@ -148,6 +138,15 @@ Qed.
 
 End shannon_fano_is_kraft.
 
+Section average_length.
+
+Variables (A T : finType) (P : {dist A}).
+Variable f : {ffun A -> seq T}. (* encoding function *)
+
+Definition average := \rsum_(x in A) P x * (size (f x))%:R.
+
+End average_length.
+
 Section shannon_fano_suboptimal.
 
 Variable A : finType.
@@ -156,13 +155,13 @@ Hypothesis Pr_pos : forall s, P s != 0.
 
 Let T := [finType of 'I_2].
 Variable f : Encoding.t A T.
-Hypothesis shannon_fano : is_shannon_fano_code P f.
 
 Local Open Scope entropy_scope.
 
-Lemma shannon_fano_average_entropy : average P f < `H P  + 1.
+Lemma shannon_fano_average_entropy : is_shannon_fano P f ->
+  average P f < `H P  + 1.
 Proof.
-rewrite /average.
+move=> H; rewrite /average.
 apply Rlt_le_trans with (\rsum_(x in A) P x * (- Log (INR #|T|) (P x) + 1)).
   apply ltR_rsum; [by apply dist_domain_not_empty|move=> i].
   apply Rmult_lt_compat_l.
