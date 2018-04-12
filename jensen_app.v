@@ -190,10 +190,10 @@ rewrite -(big_tnth _ _ _ xpredT
      (size s) / N(a|s) *
      (N(a|s) / N(a|flatten ss')))).
 (* (6) Transform the statement to match the goal *)
-move/(Rmult_le_compat_r (INR N(a|flatten ss')) _ _ (pos_INR _)).
+move/(Rmult_le_compat_r N(a|flatten ss') _ _ (pos_INR _)).
 rewrite !big_distrl /=.
 rewrite (eq_bigr
-     (fun i => log (INR (size i) / INR N(a|i)) * INR N(a|i)));
+     (fun i => log (size i / N(a|i)) * N(a|i)));
   last first.
   move=> i _; rewrite !mulRA -mulRA mulVR ?mulR1 //.
   exact/eqP/gtR_eqF.
