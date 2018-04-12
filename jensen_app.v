@@ -149,7 +149,7 @@ apply (Rle_trans _ ((\sum_(i <- ss') N(a|i))%:R *
   rewrite [in X in (_ <= X)%nat]
     (bigID (fun s => N(a|s) == O)) /=.
   by apply leq_addl.
-(* Prepare to use jensen_dist_concave *)
+(* (4) Prepare to use jensen_dist_concave *)
 set f := fun x =>
   N(a|tnth (in_tuple ss') x) / N(a|flatten ss').
 set r := fun x =>
@@ -176,6 +176,7 @@ have Hr: forall i, mkInterval Rpos_convex (r i).
       by rewrite Hnum // mem_tnth.
     by apply count_size.
   by apply /lt_0_INR /ltP; rewrite Hnum // mem_tnth.
+(* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave d Hr).
 rewrite /d /f /r /=.
 rewrite -(big_tuple _ _ _ xpredT
@@ -186,6 +187,7 @@ rewrite -(big_tuple _ _ _ xpredT
   (fun s =>
      (size s) / N(a|s) *
      (N(a|s) / N(a|flatten ss')))) /=.
+(* (6) Transform the statement to match the goal *)
 move/(Rmult_le_compat_r (INR N(a|flatten ss')) _ _ (pos_INR _)).
 rewrite !big_distrl /=.
 rewrite (eq_bigr
