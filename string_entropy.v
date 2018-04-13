@@ -39,9 +39,8 @@ Let f_div_total (a : A) := f a / total.
 
 Lemma f_div_total_pos c : 0 <= f_div_total c.
 Proof.
-apply mulR_ge0 => //.
-apply /Rlt_le /invR_gt0.
-apply /lt_0_INR /ltP.
+apply mulR_ge0 => //. 
+apply /Rlt_le /invR_gt0 /lt_0_INR /ltP.
 by rewrite lt0n.
 Qed.
 
@@ -73,8 +72,7 @@ Lemma num_occ_flatten (a:A) ss :
   N(a|flatten ss) = \sum_(s <- ss) N(a|s).
 Proof.
 rewrite /num_occ.
-elim: ss => [|s ss IH] /=.
-  by rewrite big_nil.
+elim: ss => [|s ss IH] /=; first by rewrite big_nil.
 by rewrite big_cons /= count_cat IH.
 Qed.
 
@@ -113,14 +111,12 @@ rewrite -mulRN1 big_distrl big_distrr /=.
 apply eq_bigr => a _ /=.
 case: ifP => [/eqP -> | Hnum].
   by rewrite !mulRA !simplR.
-rewrite /Rdiv (mulRC N(a|s)) 3!(mulRA _%:R).
-rewrite !mulRV ?mul1R // ?INR_eq0 //.
-rewrite -mulRA mulRN1 /log /Log -mulNR.
-rewrite -ln_Rinv.
-  rewrite invRM ?invRK //.
-  + by apply /eqP; rewrite INR_eq0.
-  + by apply /eqP /invR_neq0; rewrite INR_eq0.
-  + by apply /eqP; rewrite INR_eq0 Hnum.
+rewrite /Rdiv (mulRC N(a|s)) 3!(mulRA _%:R) !mulRV ?mul1R // ?INR_eq0 //.
+rewrite -mulRA mulRN1 /log /Log -mulNR -ln_Rinv.
+  rewrite invRM ?invRK //; apply /eqP.
+  + by rewrite INR_eq0.
+  + by apply /invR_neq0; rewrite INR_eq0.
+  + by rewrite INR_eq0 Hnum.
 apply mulR_gt0.
   by apply /invR_gt0 /lt_0_INR /ltP; rewrite lt0n.
 by apply /lt_0_INR /ltP; rewrite lt0n Hnum.
@@ -141,18 +137,15 @@ Proof.
 rewrite /mulnRdep /=.
 destruct boolP.
   by elimtype False; rewrite i in Hx.
-do 2!f_equal.
-apply eq_irrelevance.
+do 2!f_equal; apply eq_irrelevance.
 Qed.
 
 Lemma szHs_is_nHs_full s : mulnRdep (size s) (fun H => Hs0 H) = nHs s.
 Proof.
-rewrite /mulnRdep; destruct boolP.
-  rewrite /nHs (eq_bigr (fun a => 0)); first by rewrite big1.
-  move=> a _.
-  suff -> : N(a|s) == O. done.
-  by rewrite /num_occ -leqn0 -(eqP i) count_size.
-by apply szHs_is_nHs.
+rewrite /mulnRdep; destruct boolP; last by apply szHs_is_nHs.
+rewrite /nHs (eq_bigr (fun a => 0)); first by rewrite big1.
+move=> a _; suff -> : N(a|s) == O by [].
+by rewrite /num_occ -leqn0 -(eqP i) count_size.
 Qed.
 
 Lemma Rpos_convex : convex_interval (fun x =>  0 < x).
