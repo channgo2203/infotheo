@@ -221,8 +221,8 @@ apply (Rle_trans _ ((\sum_(i <- ss') N(a|i))%:R *
     by rewrite (eqP Hsum) mul0R.
   apply Rmult_le_compat_l => //.
   apply Log_increasing_le => //.
-    apply Rlt_mult_inv_pos => //.
-    apply/lt_0_INR/ltP.
+    apply/mulR_gt0 => //.
+    apply/invR_gt0/lt_0_INR/ltP.
     by rewrite lt0n Hsum.
   apply Rmult_le_compat_r.
     apply /Rlt_le /invR_gt0 /lt_0_INR /ltP.
@@ -237,8 +237,7 @@ apply (Rle_trans _ ((\sum_(i <- ss') N(a|i))%:R *
 have Htotal := esym (num_occ_flatten a ss').
 rewrite big_tnth in Htotal.
 have Hnum2 : N(a|flatten ss') != O.
-  rewrite -INR_eq0; apply/eqP => HN.
-  by move: Hnum'; rewrite HN => /Rlt_irrefl.
+  rewrite -lt0n -ltR0n; exact/RltP.
 set d := seq_nat_dist Htotal Hnum2.
 set r := fun i =>
   (size (tnth (in_tuple ss') i)) / N(a|tnth (in_tuple ss') i).
@@ -251,7 +250,7 @@ have Hr: forall i, Rpos_interval (r i).
   by apply /Hnum /mem_tnth.
 (* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave d Hr).
-rewrite /d /f /r /=.
+rewrite /d /r /=.
 rewrite -(big_tnth _ _ _ xpredT
   (fun s =>
      log ((size s) / N(a|s)) *
