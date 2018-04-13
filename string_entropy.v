@@ -257,17 +257,16 @@ set r := fun i =>
   (size (tnth (in_tuple ss') i)) / N(a|tnth (in_tuple ss') i).
 have f_pos i : 0 < f i.
   apply Rlt_mult_inv_pos => //.
-  apply /lt_0_INR /ltP.
-  by rewrite Hnum // mem_tnth.
+  by apply /lt_0_INR /ltP /Hnum /mem_tnth.
 have f_nonneg i : 0 <= f i by apply Rlt_le.
 set d := mkDist (concats_f_1 Hss' Hnum f_nonneg).
 have Hr: forall i, Rpos_interval (r i).
   rewrite /r /= => i.
-  apply Rlt_mult_inv_pos.
-    apply /lt_0_INR /ltP /(@leq_trans N(a|tnth (in_tuple ss') i)).
+  apply Rlt_mult_inv_pos; apply /lt_0_INR /ltP.
+    apply (@leq_trans N(a|tnth (in_tuple ss') i)).
       by rewrite Hnum // mem_tnth.
     by apply count_size.
-  by apply /lt_0_INR /ltP; rewrite Hnum // mem_tnth.
+  by apply /Hnum /mem_tnth.
 (* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave d Hr).
 rewrite /d /f /r /=.
