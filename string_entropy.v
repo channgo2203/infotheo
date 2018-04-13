@@ -251,7 +251,7 @@ have Hr: forall i, Rpos_interval (r i).
   by apply /Hnum /mem_tnth.
 (* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave d Hr).
-rewrite /d /f /r /=.
+rewrite /d /r /=.
 rewrite -(big_tnth _ _ _ xpredT
   (fun s =>
      log ((size s) / N(a|s)) *
