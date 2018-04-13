@@ -171,6 +171,23 @@ Definition Rpos_interval := mkInterval Rpos_convex.
 Lemma log_concave : concave_in Rpos_interval log.
 Proof. by move=> x; apply log_concave_gt0. Qed.
 
+Lemma concats_f_1 a ss' :
+  ss' != [::] ->
+ (forall s : seq_eqType A, s \in ss' -> (0 < N( a | s))%nat) ->
+ let f := fun i => N(a|tnth (in_tuple ss') i) / N(a|flatten ss') in
+ forall f_nonneg,
+ \rsum_(j < size ss') (@mkPosFun _ f f_nonneg) j = 1.
+Proof.
+move=> Hss' Hnum f f_nonneg.
+rewrite /= /f -big_distrl /= num_occ_flatten.
+rewrite -big_morph_plus_INR.
+rewrite -(big_tnth _ _ _ xpredT).
+rewrite mulRV // INR_eq0.
+destruct ss' => //=.
+rewrite big_cons addn_eq0 negb_and -lt0n.
+by rewrite Hnum // in_cons eqxx.
+Qed.
+
 Theorem concats_entropy ss :
 (*  \rsum_(s <- ss) size s * Hs s
        <= size (flatten ss) * Hs (flatten ss). *)
@@ -197,7 +214,7 @@ rewrite (eq_bigr
 rewrite -big_filter -[in X in _ <= X]big_filter.
 (* ss' contains only strings with ocurrences *)
 set ss' := [seq s <- ss | N(a|s) != O].
-case Hss': (ss' == [::]).
+case/boolP: (ss' == [::]) => Hss'.
   by rewrite (eqP Hss') !big_nil eqxx.
 have Hnum s : s \in ss' -> (N(a|s) > 0)%nat.
   by rewrite /ss' mem_filter lt0n => /andP [->].
@@ -243,16 +260,7 @@ have f_pos i : 0 < f i.
   apply /lt_0_INR /ltP.
   by rewrite Hnum // mem_tnth.
 have f_nonneg i : 0 <= f i by apply Rlt_le.
-have f_1 : \rsum_(a < size ss')
-    (mkPosFun f_nonneg) a = 1.
-  rewrite /= /f -big_distrl /= num_occ_flatten.
-  rewrite -big_morph_plus_INR.
-  rewrite -(big_tnth _ _ _ xpredT).
-  rewrite mulRV // INR_eq0.
-  destruct ss' => //=.
-  rewrite big_cons addn_eq0 negb_and -lt0n.
-  by rewrite Hnum // in_cons eqxx.
-set d := mkDist f_1.
+set d := mkDist (concats_f_1 Hss' Hnum f_nonneg).
 have Hr: forall i, Rpos_interval (r i).
   rewrite /r /= => i.
   apply Rlt_mult_inv_pos.
