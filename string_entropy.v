@@ -173,7 +173,7 @@ Proof. by move=> x; apply log_concave_gt0. Qed.
 
 Lemma concats_f_1 a ss' :
   ss' != [::] ->
- (forall s : seq_eqType A, s \in ss' -> (0 < N( a | s))%nat) ->
+ (forall s : seq A, s \in ss' -> (0 < N( a | s))%nat) ->
  let f := fun i => N(a|tnth (in_tuple ss') i) / N(a|flatten ss') in
  forall f_nonneg,
  \rsum_(j < size ss') (@mkPosFun _ f f_nonneg) j = 1.
