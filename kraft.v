@@ -657,7 +657,7 @@ pose r := ((w k)%:R / #|T|%:R^+(l``_k - l``_j) : R)%R.
 have H1 : (r >= (w j)%:R + (1 : R))%R. (*\color{comment}{\framebox{here we prove $ r \geq w_j + 1$}} *)
   pose r' := (\sum_(i < k) #|T|%:R ^+ l``_j * #|T|%:R ^- l``_i : R)%R.
   (*\color{comment}{\framebox{let $r' = \sum_{i < k} |T|^{\ell_j}|T|^{-\ell_i}$ }} *)
-  have -> : r = r'. (*\color{comment}{\framebox{here we prove $r = r'$, see Equation (\ref{eqn:kraft_converse1}) }} *)
+  have -> : r = r'. (*\color{comment}{\framebox{here we prove $r = r'$, see Eqn (\ref{eqn:kraft_converse1}) }} *)
     rewrite /r /r' natr_sum big_distrl /=; apply/eq_bigr => i _.
     have ? : (#|T|%:R ^+ (l ``_ k - l ``_ j) : R)%R \is a GRing.unit.
       by rewrite unitfE expf_eq0 card_ord pnatr_eq0 andbF.
@@ -672,7 +672,7 @@ have H1 : (r >= (w j)%:R + (1 : R))%R. (*\color{comment}{\framebox{here we prove
     by rewrite unitfE -natrX pnatr_eq0 expn_eq0 card_ord.
   pose u := (\sum_(j<=i<k) #|T|%:R ^+ l``_j * #|T|%:R ^- l``_i : R)%R.
   (*\framebox{\color{comment}{let $u = \sum_{j \leq i < k} |T|^{\ell_j}|T|^{-\ell_i}$}} *)
-  have -> : (r' = (w j)%:R + u :> R)%R. (* \color{comment}{\framebox{$r' = w_j + u$, Equation (\ref{eqn:kraft_converse2})}} *)
+  have -> : (r' = (w j)%:R + u :> R)%R. (* \color{comment}{\framebox{$r' = w_j + u$, Eqn (\ref{eqn:kraft_converse2})}} *)
     pose f := (fun i : nat => #|T|%:R^+l``_j * #|T|%:R^-l``_i : R)%R.
     case/boolP : (j == ord0) => j0.
       rewrite /u (eqP j0) wE0 add0r big_mkord /r'.
