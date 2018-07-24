@@ -19,10 +19,7 @@ Local Notation "n %:R" := (INR n).
 
 Definition simplR := (add0R, addR0, subR0, mul0R, mulR0, mul1R, mulR1).
 
-Search INR 0.
-
-Definition big_morph_plus_INR :=
-  big_morph INR morph_plus_INR (erefl (INR 0) : INR O = 0).
+Definition big_morph_plus_INR := big_morph INR morph_plus_INR (erefl 0%:R).
 
 Local Hint Resolve leRR.
 Local Hint Resolve leR0n.
@@ -182,36 +179,27 @@ rewrite exchange_big /nHs /=.
 apply ler_rsum=> a _.
 case/boolP: (ss == [::]) => Hss.
   by rewrite (eqP Hss) /= !big_nil mul0R.
+case/boolP : (N(a|flatten ss) == O) => Hnum.
+  rewrite (eqP Hnum) mul0R big_seq big1 // => s.
+  rewrite -(in_tupleE ss) => /tnthP [i ->].
+  move: Hnum; rewrite num_occ_flatten big_tnth sum_nat_eq0.
+  move /forallP /(_ i) /implyP /(_ isT) /eqP ->.
+  by rewrite mul0R.
 case/boolP: (size (flatten ss) == 0)%N => Hsz.
-  move/nilP in Hsz.
-  rewrite big_seq Hsz mul0R big1 // => -[|b i] Hi.
-    by rewrite mul0R.
-  have : b \in flatten ss.
-    by apply/flattenP; esplit; try apply: Hi; rewrite in_cons eqxx.
-  by rewrite Hsz.
-rewrite -lt0n in Hsz.
+  by move: Hnum; rewrite (nilP Hsz).
 (* (4) Prepare to use jensen_dist_concave *)
 have Htotal := esym (num_occ_flatten a ss).
 rewrite big_tnth in Htotal.
-case/boolP : (N(a|flatten ss) == O) => Hnum.
-  rewrite (eqP Hnum) mul0R.
-  rewrite big_seq big1 // => s Hs.
-  move: Hnum.
-  rewrite num_occ_flatten big_tnth sum_nat_eq0 => /forallP Hnum.
-  move: Hs; rewrite -(in_tupleE ss) => /tnthP [i ->].
-  move/implyP: (Hnum i) => /(_ isT) /eqP ->.
-  by rewrite mul0R.
 set d := seq_nat_dist Htotal Hnum.
 set r := fun i =>
   (size (tnth (in_tuple ss) i)) / N(a|tnth (in_tuple ss) i).
 have Hr: forall i, i \in dist_supp d -> Rpos_interval (r i).
   rewrite /r /= => i Hi.
-  case/boolP: (N(a | tnth (in_tuple ss) i) == 0)%nat => Ha.
+  case/boolP: (N(a | tnth (in_tuple ss) i) == O) => Ha.
     by move: Hi; rewrite inE /d /= (eqP Ha) /Rdiv mul0R eqxx.
   rewrite -lt0n in Ha.
   apply Rlt_mult_inv_pos; apply /ltR0n => //.
-  apply (@leq_trans N(a|tnth (in_tuple ss) i)) => //.
-  by apply count_size.
+  by apply (leq_trans Ha), count_size.
 (* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave Hr).
 rewrite /d /r /=.
@@ -227,50 +215,38 @@ rewrite -(big_tnth _ _ _ xpredT
 move/(@leR_wpmul2r N(a|flatten ss) _ _ (leR0n _)).
 rewrite !big_distrl /=.
 rewrite (eq_bigr
-     (fun i => log (size i / N(a|i)) * N(a|i)));
+     (fun i => N(a|i) * log (size i / N(a|i))));
   last first.
-  by move=> i _; rewrite !mulRA -mulRA mulVR ?mulR1 // INR_eq0'.
-rewrite (eq_bigr _ (fun i p => mulRC _ _)).
+  move=> i _; rewrite -[RHS]mulRC !mulRA.
+  by rewrite -mulRA mulVR ?mulR1 // ?INR_eq0'.
 move/leR_trans; apply. (* LHS matches *)
-rewrite mulRC. (*-num_occ_flatten big_filter. *)
-apply leR_wpmul2l => //.
+rewrite mulRC; apply leR_wpmul2l => //.
 apply Log_increasing_le => //.
-  rewrite (bigID (fun i => N(a|i) == 0)%nat) /=.
+  rewrite (bigID (fun i => N(a|i) == O)) /=.
   rewrite big1; last first.
-    move=> i Hi.
-    by rewrite mulRC -!mulRA (eqP Hi) mul0R.
-  rewrite add0R.
-  clear d r Hr.
-  rewrite -big_filter big_tnth.
-  move: (Hnum); rewrite -Htotal.
-  rewrite -(big_tnth _ _ ss xpredT).
+    by move=> i /eqP -> /=; rewrite div0R mulR0.
+  rewrite {d r Hr} add0R -big_filter big_tnth.
+  set ss' := filter _ _.
+  move: (Hnum); rewrite num_occ_flatten.
   rewrite [in X in X -> _](bigID (fun i => N(a|i) == 0)%nat) /=.
   rewrite big1 ?add0n; last by move=> i /eqP.
-  rewrite -big_filter.
-  set ss' := filter _ _ => Hnum2.
-  apply rsumr_gt0 => /=.
-    rewrite card_ord.
-    move: Hnum2.
-    case: ss' => //.
+  rewrite -big_filter -/ss' => Hnum2.
+  apply rsumr_gt0 => /= [|i].
+    rewrite card_ord; move: ss' Hnum2 => [] //.
     by rewrite big_nil eqxx.
-  move=> i.
-  have Hi: N(a|tnth (in_tuple ss') i) != 0%nat.
+  have Hi: (N(a|tnth (in_tuple ss') i) > 0)%nat.
     move: (mem_tnth i (in_tuple ss')).
-    by rewrite memtE /= mem_filter => /andP [].
-  do! apply mulR_gt0; try apply invR_gt0; try apply ltR0n.
+    by rewrite lt0n memtE /= mem_filter => /andP [].
+  do! apply mulR_gt0; try apply invR_gt0; try apply ltR0n => //.
   + by move: Hi; case: (tnth _ _).
-  + by rewrite lt0n.
-  + by rewrite lt0n.
   + by rewrite big_tnth Htotal lt0n.
 rewrite size_flatten /shape sumn_big_addn big_map.
 rewrite big_morph_plus_INR /Rdiv big_distrl /=.
 rewrite 2!big_tnth; apply ler_rsum => i _.
 case/boolP: (N(a|tnth (in_tuple ss) i) == O) => Ha.
   rewrite (eqP Ha) mul0R mulR0.
-  apply divR_ge0 => //.
-  by rewrite ltR0n lt0n.
-rewrite -mulRA (mulRA (/ _)) mulVR ?mul1R //.
-by rewrite INR_eq0'.
+  apply divR_ge0 => //; by rewrite ltR0n lt0n.
+by rewrite -mulRA (mulRA (/ _)) mulVR ?mul1R // INR_eq0'.
 Qed.
 
 End string_concat.

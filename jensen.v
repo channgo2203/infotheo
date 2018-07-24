@@ -120,10 +120,8 @@ move=> n IH {X}X b cardA Hb HDr.
 case/boolP : (X b == 1) => Xb1.
   move/dist_supp_singleP: (eqP Xb1) => /eqP ->.
   rewrite !big_set1 (eqP Xb1) !mulR1; split; auto.
-  apply HDr; rewrite inE (eqP Xb1).
-  apply/eqP => H01.
-  move: Rlt_0_1.
-  by rewrite H01 => /Rlt_irrefl.
+  apply HDr; rewrite inE (eqP Xb1) eq_sym.
+  by apply /eqP /ltR_eqF.
 have HXb1: 1 - X b != 0.
   by apply: contra Xb1; rewrite subR_eq0 eq_sym.
 set d := D1Dist.d Xb1.
@@ -148,13 +146,10 @@ have {HsumD1}HsumXD1 q:
 rewrite 2!{}HsumXD1.
 have Hd a : a \in dist_supp d -> D (r a).
   rewrite inE /= /D1Dist.f.
-  case: ifP => _.
-    by rewrite eqxx.
+  case: ifP => _; first by rewrite eqxx.
   case/boolP: (X a == 0).
-    move/eqP => ->.
-    by rewrite /Rdiv mul0R eqxx.
-  move=> Ha _; apply HDr.
-  by rewrite inE.
+    move /eqP ->; by rewrite /Rdiv mul0R eqxx.
+  move=> Ha _; apply HDr; by rewrite inE.
 have /IH /(_ Hd) {IH}[IH HDd] : #|dist_supp d| = n.
   by rewrite D1Dist.card_dist_supp // cardA.
 have HXb: 0 <= X b <= 1 by split; [exact/dist_ge0|exact/dist_max].
