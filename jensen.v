@@ -105,19 +105,25 @@ Qed.
 Local Hint Resolve leRR.
 
 Lemma jensen_dist (r : A -> R) (X : dist A) :
-  (forall a, D (r a)) ->
+  (forall a, a \in dist_supp X -> D (r a)) ->
   f (\rsum_(a in A) r a * X a) <= \rsum_(a in A) f (r a) * X a.
 Proof.
 move=> HDr.
 apply (@proj1 _ (D (\rsum_(a in dist_supp X) r a * X a))).
 rewrite [in X in _ <= X]rsum_dist_supp [in X in X <= _]rsum_dist_supp /=.
+move: HDr.
 apply: (@dist_ind A (fun X =>
+   (forall a : A, a \in dist_supp X -> D (r a)) ->
    f (\rsum_(a in dist_supp X) r a * X a) <=
    \rsum_(a in dist_supp X) f (r a) * X a /\ _)) => //.
-move=> n IH {X}X b cardA Hb.
+move=> n IH {X}X b cardA Hb HDr.
 case/boolP : (X b == 1) => Xb1.
   move/dist_supp_singleP: (eqP Xb1) => /eqP ->.
-  by rewrite !big_set1 (eqP Xb1) !mulR1.
+  rewrite !big_set1 (eqP Xb1) !mulR1; split; auto.
+  apply HDr; rewrite inE (eqP Xb1).
+  apply/eqP => H01.
+  move: Rlt_0_1.
+  by rewrite H01 => /Rlt_irrefl.
 have HXb1: 1 - X b != 0.
   by apply: contra Xb1; rewrite subR_eq0 eq_sym.
 set d := D1Dist.d Xb1.
@@ -140,9 +146,19 @@ have {HsumD1}HsumXD1 q:
     by rewrite (D1Dist.f_0 _ (eqP HXi)) eqxx.
   by rewrite D1Dist.f_eq0 // ?HXi // eq_sym.
 rewrite 2!{}HsumXD1.
-have /IH {IH}[IH HDd] : #|dist_supp d| = n.
+have Hd a : a \in dist_supp d -> D (r a).
+  rewrite inE /= /D1Dist.f.
+  case: ifP => _.
+    by rewrite eqxx.
+  case/boolP: (X a == 0).
+    move/eqP => ->.
+    by rewrite /Rdiv mul0R eqxx.
+  move=> Ha _; apply HDr.
+  by rewrite inE.
+have /IH /(_ Hd) {IH}[IH HDd] : #|dist_supp d| = n.
   by rewrite D1Dist.card_dist_supp // cardA.
 have HXb: 0 <= X b <= 1 by split; [exact/dist_ge0|exact/dist_max].
+have Drb: D (r b) by apply HDr; rewrite inE.
 split; last by rewrite mulRC; apply interval_convex.
 rewrite mulRC.
 refine (leR_trans
@@ -154,7 +170,8 @@ Qed.
 
 Local Open Scope proba_scope.
 
-Lemma Jensen (X : rvar A) : (forall x, D (X x)) ->
+Lemma Jensen (X : rvar A) :
+  (forall x, x \in dist_supp (rv_dist X) -> D (X x)) ->
   f (`E X) <= `E (mkRvar (`p_ X) (fun x => f (X x))).
 Proof. move=> HDX; rewrite !ExE /=; by apply jensen_dist. Qed.
 
@@ -178,12 +195,12 @@ exact: concave_f.
 Qed.
 
 Lemma jensen_dist_concave (r : A -> R) (X : dist A) :
-  (forall x, D (r x)) ->
+  (forall x, x \in dist_supp X -> D (r x)) ->
   \rsum_(a in A) f (r a) * X a <= f (\rsum_(a in A) r a * X a).
 Proof.
 move=> HDr.
 rewrite -[X in _ <= X]oppRK leR_oppr.
-move: (jensen_dist convex_g X HDr).
+move: (jensen_dist convex_g HDr).
 rewrite /g.
 rewrite [in X in _ <= X](eq_bigr (fun a => -1 * (f (r a) * X a))).
   rewrite -[in X in _ <= X]big_distrr /=.

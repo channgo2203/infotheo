@@ -19,7 +19,10 @@ Local Notation "n %:R" := (INR n).
 
 Definition simplR := (add0R, addR0, subR0, mul0R, mulR0, mul1R, mulR1).
 
-Definition big_morph_plus_INR := big_morph INR morph_plus_INR (erefl 0%:R).
+Search INR 0.
+
+Definition big_morph_plus_INR :=
+  big_morph INR morph_plus_INR (erefl (INR 0) : INR O = 0).
 
 Local Hint Resolve leRR.
 Local Hint Resolve leR0n.
@@ -101,7 +104,6 @@ Definition Hs (s : seq A) :=
 
 Definition nHs (s : seq A) :=
  \rsum_(a in A)
-  if N(a|s) == 0%nat then 0 else
   N(a|s) * log (size s / N(a|s)).
 
 Lemma szHs_is_nHs s (H : size s != O) :
@@ -110,9 +112,9 @@ Proof.
 rewrite /entropy /nHs /num_occ_dist /=.
 rewrite -mulRN1 big_distrl big_distrr /=.
 apply eq_bigr => a _ /=.
-case: ifP => [/eqP -> | Hnum].
-  by rewrite !mulRA !simplR.
 rewrite /Rdiv (mulRC N(a|s)) 3!(mulRA _%:R) !mulRV ?mul1R // ?INR_eq0' //.
+case /boolP: (N(a|s) == 0)%N => Hnum.
+  by rewrite (eqP Hnum) !mul0R.
 rewrite -mulRA mulRN1 /log /Log -mulNR -ln_Rinv.
   rewrite invRM ?invRK //; apply /eqP.
   + by rewrite INR_eq0'.
@@ -145,7 +147,7 @@ Lemma szHs_is_nHs_full s : mulnRdep (size s) (fun H => Hs0 H) = nHs s.
 Proof.
 rewrite /mulnRdep; destruct boolP; last by apply szHs_is_nHs.
 rewrite /nHs (eq_bigr (fun a => 0)); first by rewrite big1.
-move=> a _; suff -> : N(a|s) == O by [].
+move=> a _; suff: N(a|s) == O; first by move /eqP ->; rewrite mul0R.
 by rewrite /num_occ -leqn0 -(eqP i) count_size.
 Qed.
 
@@ -178,98 +180,97 @@ rewrite (eq_bigr _ (fun i _ => szHs_is_nHs i)).*)
 rewrite exchange_big /nHs /=.
 (* (2) Move to per-character inequalities *)
 apply ler_rsum=> a _.
-(* Remove strings containing no occurrences *)
-rewrite (bigID (fun s => N(a|s) == O)) /=.
-rewrite big1; last by move=> i ->.
-rewrite num_occ_flatten add0R.
-rewrite [in X in _ <= X](bigID (fun s => N(a|s) == O)).
-rewrite [in X in _ <= X]big1 //= ?add0n;
-  last by move=> i /eqP.
-rewrite (eq_bigr
-       (fun i => log (size i / N(a|i)) * N(a|i)));
-  last by move=> i /negbTE ->; rewrite mulRC.
-rewrite -big_filter -[in X in _ <= X]big_filter.
-(* ss' contains only strings with ocurrences *)
-set ss' := [seq s <- ss | N(a|s) != O].
-case/boolP: (ss' == [::]) => Hss'.
-  by rewrite (eqP Hss') !big_nil eqxx.
-have Hnum s : s \in ss' -> (N(a|s) > 0)%nat.
-  by rewrite /ss' mem_filter lt0n => /andP [->].
-have Hnum': 0 < N(a|flatten ss').
-  apply /ltR0n.
-  destruct ss' => //=.
-  rewrite /num_occ count_cat ltn_addr //.
-  by rewrite Hnum // in_cons eqxx.
-have Hsz: 0 < size (flatten ss').
-  apply (ltR_leR_trans Hnum').
-  by apply /le_INR /leP /count_size.
-apply (@leR_trans ((\sum_(i <- ss') N(a|i))%:R *
-    log (size (flatten ss') /
-      \sum_(i <- ss') N(a|i))));
-  last first.
-  (* Not mentioned in the book: one has to compensate for the discarding
-     of strings containing no occurences.
-     Works thanks to monotonicity of log. *)
-  (* (3) Compensate for removed strings *)
-  case: ifP => Hsum.
-    by rewrite (eqP Hsum) mul0R.
-  apply leR_wpmul2l => //.
-  apply Log_increasing_le => //.
-    apply Rlt_mult_inv_pos => //.
-    apply/ltR0n.
-    by rewrite lt0n Hsum.
-  apply leR_wpmul2r.
-    apply /Rlt_le /invR_gt0 /ltR0n.
-    by rewrite lt0n Hsum.
-  apply /le_INR /leP.
-  rewrite !size_flatten !sumn_big_addn.
-  rewrite !big_map big_filter.
-  rewrite [in X in (_ <= X)%nat]
-    (bigID (fun s => N(a|s) == O)) /=.
-  by apply leq_addl.
+case/boolP: (ss == [::]) => Hss.
+  by rewrite (eqP Hss) /= !big_nil mul0R.
+case/boolP: (size (flatten ss) == 0)%N => Hsz.
+  move/nilP in Hsz.
+  rewrite big_seq Hsz mul0R big1 // => -[|b i] Hi.
+    by rewrite mul0R.
+  have : b \in flatten ss.
+    by apply/flattenP; esplit; try apply: Hi; rewrite in_cons eqxx.
+  by rewrite Hsz.
+rewrite -lt0n in Hsz.
 (* (4) Prepare to use jensen_dist_concave *)
-have Htotal := esym (num_occ_flatten a ss').
+have Htotal := esym (num_occ_flatten a ss).
 rewrite big_tnth in Htotal.
-have Hnum2 : N(a|flatten ss') != O.
-  rewrite -lt0n -ltR0n'; exact/ltRP.
-set d := seq_nat_dist Htotal Hnum2.
+case/boolP : (N(a|flatten ss) == O) => Hnum.
+  rewrite (eqP Hnum) mul0R.
+  rewrite big_seq big1 // => s Hs.
+  move: Hnum.
+  rewrite num_occ_flatten big_tnth sum_nat_eq0 => /forallP Hnum.
+  move: Hs; rewrite -(in_tupleE ss) => /tnthP [i ->].
+  move/implyP: (Hnum i) => /(_ isT) /eqP ->.
+  by rewrite mul0R.
+set d := seq_nat_dist Htotal Hnum.
 set r := fun i =>
-  (size (tnth (in_tuple ss') i)) / N(a|tnth (in_tuple ss') i).
-have Hr: forall i, Rpos_interval (r i).
-  rewrite /r /= => i.
-  apply Rlt_mult_inv_pos; apply /ltR0n.
-    apply (@leq_trans N(a|tnth (in_tuple ss') i)).
-      by rewrite Hnum // mem_tnth.
-    by apply count_size.
-  by apply /Hnum /mem_tnth.
+  (size (tnth (in_tuple ss) i)) / N(a|tnth (in_tuple ss) i).
+have Hr: forall i, i \in dist_supp d -> Rpos_interval (r i).
+  rewrite /r /= => i Hi.
+  case/boolP: (N(a | tnth (in_tuple ss) i) == 0)%nat => Ha.
+    by move: Hi; rewrite inE /d /= (eqP Ha) /Rdiv mul0R eqxx.
+  rewrite -lt0n in Ha.
+  apply Rlt_mult_inv_pos; apply /ltR0n => //.
+  apply (@leq_trans N(a|tnth (in_tuple ss) i)) => //.
+  by apply count_size.
 (* (5) Apply Jensen *)
-move: (jensen_dist_concave log_concave d Hr).
+move: (jensen_dist_concave log_concave Hr).
 rewrite /d /r /=.
 rewrite -(big_tnth _ _ _ xpredT
   (fun s =>
      log ((size s) / N(a|s)) *
-     (N(a|s) / N(a|flatten ss')))).
+     (N(a|s) / N(a|flatten ss)))).
 rewrite -(big_tnth _ _ _ xpredT
   (fun s =>
      (size s) / N(a|s) *
-     (N(a|s) / N(a|flatten ss')))).
+     (N(a|s) / N(a|flatten ss)))).
 (* (6) Transform the statement to match the goal *)
-move/(@leR_wpmul2r N(a|flatten ss') _ _ (leR0n _)).
+move/(@leR_wpmul2r N(a|flatten ss) _ _ (leR0n _)).
 rewrite !big_distrl /=.
 rewrite (eq_bigr
      (fun i => log (size i / N(a|i)) * N(a|i)));
   last first.
-  move=> i _; rewrite !mulRA -mulRA mulVR ?mulR1 //.
-  exact/eqP/gtR_eqF.
+  by move=> i _; rewrite !mulRA -mulRA mulVR ?mulR1 // INR_eq0'.
+rewrite (eq_bigr _ (fun i p => mulRC _ _)).
 move/leR_trans; apply. (* LHS matches *)
-rewrite mulRC -num_occ_flatten big_filter.
-rewrite (eq_bigr
-     (fun i => size i * / N(a|flatten ss')));
-  last first.
-  move=> i Hi; rewrite !mulRA -(mulRA _ (/ _)).
-  by rewrite mulVR ?mulR1 // INR_eq0'.
-rewrite -big_filter -/ss' -big_distrl -big_morph_plus_INR /=.
-by rewrite size_flatten sumn_big_addn big_map.
+rewrite mulRC. (*-num_occ_flatten big_filter. *)
+apply leR_wpmul2l => //.
+apply Log_increasing_le => //.
+  rewrite (bigID (fun i => N(a|i) == 0)%nat) /=.
+  rewrite big1; last first.
+    move=> i Hi.
+    by rewrite mulRC -!mulRA (eqP Hi) mul0R.
+  rewrite add0R.
+  clear d r Hr.
+  rewrite -big_filter big_tnth.
+  move: (Hnum); rewrite -Htotal.
+  rewrite -(big_tnth _ _ ss xpredT).
+  rewrite [in X in X -> _](bigID (fun i => N(a|i) == 0)%nat) /=.
+  rewrite big1 ?add0n; last by move=> i /eqP.
+  rewrite -big_filter.
+  set ss' := filter _ _ => Hnum2.
+  apply rsumr_gt0 => /=.
+    rewrite card_ord.
+    move: Hnum2.
+    case: ss' => //.
+    by rewrite big_nil eqxx.
+  move=> i.
+  have Hi: N(a|tnth (in_tuple ss') i) != 0%nat.
+    move: (mem_tnth i (in_tuple ss')).
+    by rewrite memtE /= mem_filter => /andP [].
+  do! apply mulR_gt0; try apply invR_gt0; try apply ltR0n.
+  + by move: Hi; case: (tnth _ _).
+  + by rewrite lt0n.
+  + by rewrite lt0n.
+  + by rewrite big_tnth Htotal lt0n.
+rewrite size_flatten /shape sumn_big_addn big_map.
+rewrite big_morph_plus_INR /Rdiv big_distrl /=.
+rewrite 2!big_tnth; apply ler_rsum => i _.
+case/boolP: (N(a|tnth (in_tuple ss) i) == O) => Ha.
+  rewrite (eqP Ha) mul0R mulR0.
+  apply divR_ge0 => //.
+  by rewrite ltR0n lt0n.
+rewrite -mulRA (mulRA (/ _)) mulVR ?mul1R //.
+by rewrite INR_eq0'.
 Qed.
 
 End string_concat.
