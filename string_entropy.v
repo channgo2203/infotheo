@@ -202,7 +202,7 @@ have Hr: forall i, i \in dist_supp d -> Rpos_interval (r i).
   by apply (leq_trans Ha), count_size.
 (* (5) Apply Jensen *)
 move: (jensen_dist_concave log_concave Hr).
-rewrite /d /r /=.
+rewrite /d /r /= {d r Hr Htotal}.
 rewrite -(big_tnth _ _ _ xpredT
   (fun s =>
      log ((size s) / N(a|s)) *
@@ -225,7 +225,7 @@ apply Log_increasing_le => //.
   rewrite (bigID (fun i => N(a|i) == O)) /=.
   rewrite big1; last first.
     by move=> i /eqP -> /=; rewrite div0R mulR0.
-  rewrite {d r Hr} add0R -big_filter big_tnth.
+  rewrite add0R -big_filter big_tnth.
   set ss' := filter _ _.
   move: (Hnum); rewrite num_occ_flatten.
   rewrite [in X in X -> _](bigID (fun i => N(a|i) == 0)%nat) /=.
@@ -239,7 +239,7 @@ apply Log_increasing_le => //.
     by rewrite lt0n memtE /= mem_filter => /andP [].
   do! apply mulR_gt0; try apply invR_gt0; try apply ltR0n => //.
   + by move: Hi; case: (tnth _ _).
-  + by rewrite big_tnth Htotal lt0n.
+  + by rewrite -num_occ_flatten lt0n.
 rewrite size_flatten /shape sumn_big_addn big_map.
 rewrite big_morph_plus_INR /Rdiv big_distrl /=.
 rewrite 2!big_tnth; apply ler_rsum => i _.
